@@ -1,0 +1,13 @@
+# PyCharm & Jupyter
+.idea/
+.ipynb_checkpoints/
+
+# Python cache
+_pycache__
+*.py[cod]
+
+# Results
+data
+
+# random
+code_cemetery.py
