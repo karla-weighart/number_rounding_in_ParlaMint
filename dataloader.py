@@ -3,11 +3,8 @@ from glob import glob
 from environment_constants import PATH, YEARS
 
 
-def make_tsv_files_dict():
-    tsv_files_dict = {}
-    for year in YEARS:
-        tsv_files_dict[year] = [file_name for file_name in glob(PATH + "\\" + year + "\\*.tsv")]
-    return tsv_files_dict
+def get_tsv_file_path(conllu_file_path):
+    return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
 def make_conllu_files_dict():
