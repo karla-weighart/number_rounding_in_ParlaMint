@@ -7,6 +7,7 @@ def make_tsv_files_dict():
     tsv_files_dict = {}
     for year in YEARS:
         tsv_files_dict[year] = [file_name for file_name in glob(PATH + "\\" + year + "\\*.tsv")]
+    return tsv_files_dict
 
 
 def make_conllu_files_dict():
