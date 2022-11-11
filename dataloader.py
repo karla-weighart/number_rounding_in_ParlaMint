@@ -45,6 +45,10 @@ def sentence_to_df_row(sentence):
 
 
 def sentences_and_meta_df(file_path):
+    """takes a path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns:
+    ['sent_id', 'sentence_df', 'newdoc id', 'Title', 'House', 'Term', 'Speaker_role', 'Speaker_type',
+    'Speaker_party_name', 'Party_status', 'Speaker_name', 'Speaker_gender']
+    """
     file = open(file_path, 'r', encoding='utf-8').read()
     sentences = conllu.parse(file)
     sentences_df = pd.concat([sentence_to_df_row(s) for s in sentences])
@@ -52,6 +56,13 @@ def sentences_and_meta_df(file_path):
     # some sentences from sentence_to_df_row() do not come with utterance IDs
     # make them inherit the utterance ID of their predecessor with ffill
     sentences_df['newdoc id'] = sentences_df['newdoc id'].ffill()
-    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t').rename(columns={'ID': 'newdoc id'})
+
+    # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
+    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t')[['ID', 'Title', 'House', 'Term', 'Speaker_role',
+                                                                   'Speaker_type', 'Speaker_party_name', 'Party_status',
+                                                                   'Speaker_name', 'Speaker_gender']]
+
+    # rename utterance_ID column to match sentences_df so the two dfs can be merged
+    meta_df = meta_df.rename(columns={'ID': 'newdoc id'})
     sentences_df = sentences_df.merge(meta_df)
     return sentences_df
