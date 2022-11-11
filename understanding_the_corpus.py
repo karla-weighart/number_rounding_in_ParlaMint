@@ -17,16 +17,18 @@ def check_if_column_empty(column_name):
     return files_where_column_empty
 
 
-def check_subcorpora():
-    """checks if any meta file contains anything but 'Reference' or 'COVID' in the 'Subcorpus' column
-    spoiler alert: NOPE."""
-    files_where_other_subcorpus = []
+def values_in_column(column_name):
+    """returns a list of all values found in the specified column across all -meta.tsv files"""
+    label_list = []
+
     for path_list in tqdm(make_meta_files_dict().values()):
-        for path in tqdm(path_list):
+        for path in path_list:
             df = pd.read_csv(path, sep='\t')
-            mask1 = df['Subcorpus'] != 'Reference'
-            if not df[mask1]['ID'].shape == (0,):
-                mask2 = df[mask1]['Subcorpus'] != 'COVID'
-                if not df[mask1][mask2]['ID'].shape == (0,):
-                    files_where_other_subcorpus.append(path)
-    return files_where_other_subcorpus
+            for label in label_list:
+                df = df[df[column_name] != label]
+                if df.shape[0] == 0:
+                    break
+            else:  # the following will only be executed if the for-loop did not break
+                new_labels = set(df[column_name])
+                label_list.extend(new_labels)
+    return label_list
