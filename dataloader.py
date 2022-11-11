@@ -5,15 +5,19 @@ import pandas as pd
 from environment_constants import PATH, YEARS
 
 
-def get_tsv_file_path(conllu_file_path):
-    return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
-
-
 def make_conllu_files_dict():
+    """makes a dict.
+    keys: years (from environment constant YEARS)
+    value: list of paths to .conllu files from that year"""
     conllu_files_dict = {}
     for year in YEARS:
         conllu_files_dict[year] = [file_name for file_name in glob(PATH + "\\" + year + "\\*.conllu")]
     return conllu_files_dict
+
+
+def get_tsv_file_path(conllu_file_path):
+    """takes a path of a conllu file and returns the path of the corresponding meta file"""
+    return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
 def sentence_to_df_row(sentence):
