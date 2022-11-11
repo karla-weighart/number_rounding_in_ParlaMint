@@ -26,3 +26,14 @@ def values_in_column(column_name):
             new_labels = set(df[column_name])
             label_set = label_set.union(new_labels)
     return label_set
+
+
+def files_where_column_has_value(column_name, value):
+    """returns a list of all -meta.tsv files where the specified column contains the specified value at least once"""
+    files_where_column_has_value_list = []
+    for path_list in tqdm(make_meta_files_dict().values()):
+        for path in path_list:
+            df = pd.read_csv(path, sep='\t')
+            if value in set(df[column_name]):
+                files_where_column_has_value_list.append(path)
+    return files_where_column_has_value_list
