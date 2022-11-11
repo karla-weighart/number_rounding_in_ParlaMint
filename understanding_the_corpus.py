@@ -12,7 +12,7 @@ def files_where_column_empty(column_name):
     for path_list in tqdm(make_meta_files_dict().values()):
         for path in path_list:
             df = pd.read_csv(path, sep='\t')
-            if not np.all([pd.isna(s) for s in df['Agenda']]):
+            if not np.all([pd.isna(s) for s in df[column_name]]):
                 files_where_column_empty_list.append(path)
     return files_where_column_empty_list
 
