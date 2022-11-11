@@ -18,7 +18,7 @@ def check_if_column_empty(column_name):
 
 
 def values_in_column(column_name):
-    """returns a list of all values found in the specified column across all -meta.tsv files"""
+    """returns a set of all values found in the specified column across all -meta.tsv files"""
     label_set = set()
     for path_list in tqdm(make_meta_files_dict().values()):
         for path in path_list:
