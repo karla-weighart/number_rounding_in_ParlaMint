@@ -19,16 +19,10 @@ def check_if_column_empty(column_name):
 
 def values_in_column(column_name):
     """returns a list of all values found in the specified column across all -meta.tsv files"""
-    label_list = []
-
+    label_set = set()
     for path_list in tqdm(make_meta_files_dict().values()):
         for path in path_list:
             df = pd.read_csv(path, sep='\t')
-            for label in label_list:
-                df = df[df[column_name] != label]
-                if df.shape[0] == 0:
-                    break
-            else:  # the following will only be executed if the for-loop did not break
-                new_labels = set(df[column_name])
-                label_list.extend(new_labels)
-    return label_list
+            new_labels = set(df[column_name])
+            label_set = label_set.union(new_labels)
+    return label_set
