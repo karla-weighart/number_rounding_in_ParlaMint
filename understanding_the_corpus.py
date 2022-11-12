@@ -1,3 +1,5 @@
+from typing import List, Set, Any
+
 import pandas as pd
 import numpy as np
 
@@ -6,7 +8,7 @@ from tqdm import tqdm
 from dataloader import make_meta_files_dict
 
 
-def files_where_column_not_empty(column_name):
+def files_where_column_not_empty(column_name: str) -> List[str]:
     """returns a list of all -meta.tsv files where the specified column contains something else than NaNs"""
     files_where_column_not_empty_list = []
     for path_list in tqdm(make_meta_files_dict().values()):
@@ -17,7 +19,7 @@ def files_where_column_not_empty(column_name):
     return files_where_column_not_empty_list
 
 
-def values_in_column(column_name):
+def values_in_column(column_name: str) -> Set[str]:
     """returns a set of all values found in the specified column across all -meta.tsv files"""
     label_set = set()
     for path_list in tqdm(make_meta_files_dict().values()):
@@ -28,7 +30,7 @@ def values_in_column(column_name):
     return label_set
 
 
-def files_where_column_has_value(column_name, value):
+def files_where_column_has_value(column_name: str, value: Any) -> List[str]:
     """returns a list of all -meta.tsv files where the specified column contains the specified value at least once"""
     files_where_column_has_value_list = []
     for path_list in tqdm(make_meta_files_dict().values()):
