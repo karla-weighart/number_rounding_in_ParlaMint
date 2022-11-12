@@ -1,4 +1,6 @@
 from glob import glob
+from typing import Dict, List
+
 import conllu
 import pandas as pd
 
@@ -15,7 +17,7 @@ def make_conllu_files_dict():
     return conllu_files_dict
 
 
-def make_meta_files_dict():
+def make_meta_files_dict() -> Dict[str, List[str]]:
     """returns a dict.
     keys: years (from environment constant YEARS)
     value for each year: list of paths to -meta.tsv files from that year"""
@@ -26,13 +28,13 @@ def make_meta_files_dict():
 
 
 def get_tsv_file_path(conllu_file_path):
-    """takes a path of a conllu file.
+    """takes the path of a conllu file.
     returns the path of the corresponding -meta.tsv file"""
     return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
 def sentences_and_meta_df(file_path):
-    """takes a path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns:
+    """takes the path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns:
     ['sent_id', 'sentence_df', 'utterance_id', 'Title', 'House', 'Term', 'Speaker_role', 'Speaker_type',
     'Speaker_party_name', 'Party_status', 'Speaker_name', 'Speaker_gender']
     """
@@ -41,7 +43,7 @@ def sentences_and_meta_df(file_path):
         """takes a sentence from the conllu parser
         returns a single-row pandas DataFrame with columns:
         'sent_id' : e.g. '2015-01-05-commons.seg1.1'
-        'sentence_df' : pandas DataFrame (yes, we are using a DataFrame within a DataFrame) containing the linguistic data
+        'sentence_df' : pandas DataFrame (yes, DataFrame within a DataFrame) containing the linguistic data
         'newdoc id' :
             if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
             else: None (will be filled in later in outer function)
