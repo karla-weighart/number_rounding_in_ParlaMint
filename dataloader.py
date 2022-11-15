@@ -33,7 +33,7 @@ def get_tsv_file_path(conllu_file_path):
     return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
-def sentences_and_meta_df(file_path):
+def sentences_and_meta_df(file_path: str):
     """takes the path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns:
     ['sent_id', 'sentence_df', 'utterance_id', 'Title', 'House', 'Term', 'Speaker_role', 'Speaker_type',
     'Speaker_party_name', 'Party_status', 'Speaker_name', 'Speaker_gender']
@@ -62,9 +62,9 @@ def sentences_and_meta_df(file_path):
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
-    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t')[['ID', 'Title', 'House', 'Term', 'Speaker_role',
-                                                                   'Speaker_type', 'Speaker_party_name', 'Party_status',
-                                                                   'Speaker_name', 'Speaker_gender']]
+    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t')[
+        ['ID', 'Title', 'House', 'Term', 'Speaker_role', 'Speaker_type', 'Speaker_party_name', 'Party_status',
+         'Speaker_name', 'Speaker_gender']]
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
