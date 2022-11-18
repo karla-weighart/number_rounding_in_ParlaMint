@@ -4,7 +4,7 @@ from typing import Dict, List
 import conllu
 import pandas as pd
 
-from environment_constants import PATH, YEARS
+from environment_constants import PATH, YEARS, COLUMN_NAMES
 
 
 def make_conllu_files_dict():
@@ -34,9 +34,8 @@ def get_tsv_file_path(conllu_file_path):
 
 
 def sentences_and_meta_df(file_path: str):
-    """takes the path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns:
-    ['sent_id', 'sentence_df', 'utterance_id', 'Title', 'House', 'Term', 'Speaker_role', 'Speaker_type',
-    'Speaker_party_name', 'Party_status', 'Speaker_name', 'Speaker_gender']
+    """takes the path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns as
+    defined in environment constant COLUMN_NAMES
     """
 
     def sentence_to_df_row(sentence):
@@ -62,9 +61,7 @@ def sentences_and_meta_df(file_path: str):
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
-    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t')[
-        ['ID', 'Title', 'House', 'Term', 'Speaker_role', 'Speaker_type', 'Speaker_party_name', 'Party_status',
-         'Speaker_name', 'Speaker_gender']]
+    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t')[COLUMN_NAMES]
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
