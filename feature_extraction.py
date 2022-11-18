@@ -12,7 +12,7 @@ def find_pattern_in_sentence(pattern: List[Tuple[str]], sentence_df: pd.DataFram
 
     Returns
     -------
-    dataframe with the concrete forms that matched the pattern
+    List of dataframes, each dataframe contains the concrete forms that matched the pattern
     """
     search_results = []
     for i in range(sentence_df.shape[0] - len(pattern) + 1):
