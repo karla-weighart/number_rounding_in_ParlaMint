@@ -4,41 +4,49 @@ from typing import Dict, List
 import conllu
 import pandas as pd
 
-from environment_constants import PATH, YEARS, COLUMN_NAMES
+from environment_constants import PATH, COLUMN_NAMES
 
 
-def make_conllu_files_dict():
-    """returns a dict.
-    keys: years (from environment constant YEARS)
-    value for each year: list of paths to .conllu files from that year"""
-    conllu_files_dict = {}
-    for year in YEARS:
-        conllu_files_dict[year] = [file_name for file_name in glob(PATH + "\\" + year + "\\*.conllu")]
-    return conllu_files_dict
+def make_conllu_files_list() -> List[str]:
+    """
+    Returns
+    -------
+    a list of paths to all .conllu files
+    """
+    conllu_files_list = [file_name for file_name in glob(PATH + "\\*.conllu")]
+    return conllu_files_list
 
 
-def make_meta_files_dict() -> Dict[str, List[str]]:
-    """returns a dict.
-    keys: years (from environment constant YEARS)
-    value for each year: list of paths to -meta.tsv files from that year"""
-    meta_files_dict = {}
-    for year in YEARS:
-        meta_files_dict[year] = [file_name for file_name in glob(PATH + "\\" + year + "\\*-meta.tsv")]
-    return meta_files_dict
+def make_meta_files_list() -> List[str]:
+    """
+    Returns
+    -------
+    a list of paths to all -meta.tsv files
+    """
+    meta_files_list = [file_name for file_name in glob(PATH + "\\*-meta.tsv")]
+    return meta_files_list
 
 
-def get_tsv_file_path(conllu_file_path):
-    """takes the path of a conllu file.
-    returns the path of the corresponding -meta.tsv file"""
+def get_meta_file_path(conllu_file_path: str) -> str:
+    """
+
+    Parameters
+    ----------
+    conllu_file_path: path of a conllu file
+
+    Returns
+    -------
+    path of the corresponding -meta.tsv file
+    """
     return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
-def sentences_and_meta_df(file_path: str):
+def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     """takes the path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns as
     defined in environment constant COLUMN_NAMES
     """
 
-    def sentence_to_df_row(sentence):
+    def sentence_to_df_row(sentence) -> pd.DataFrame:
         """takes a sentence from the conllu parser
         returns a single-row pandas DataFrame with columns:
         'sent_id' : e.g. '2015-01-05-commons.seg1.1'
@@ -61,7 +69,7 @@ def sentences_and_meta_df(file_path: str):
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
-    meta_df = pd.read_csv(get_tsv_file_path(file_path), sep='\t')[COLUMN_NAMES]
+    meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[COLUMN_NAMES]
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})

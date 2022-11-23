@@ -19,3 +19,18 @@ def find_pattern_in_sentence(pattern: List[Tuple[str]], sentence_df: pd.DataFram
         if np.alltrue([sentence_df.iloc[i+p][pattern[p][0]] == pattern[p][1] for p in range(len(pattern))]):
             search_results.append(sentence_df.iloc[i:i+len(pattern)]['form'])
     return search_results
+
+
+def find_pattern_in_file(pattern: List[Tuple[str]], path: str) -> pd.DataFrame:
+    """
+
+    Parameters
+    ----------
+    pattern
+    path
+
+    Returns
+    -------
+
+    """
+

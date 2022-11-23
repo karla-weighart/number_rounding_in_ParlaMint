@@ -5,13 +5,13 @@ import numpy as np
 
 from tqdm import tqdm
 
-from dataloader import make_meta_files_dict
+from dataloader import make_meta_files_list
 
 
 def files_where_column_not_empty(column_name: str) -> List[str]:
     """returns a list of all -meta.tsv files where the specified column contains something else than NaNs"""
     files_where_column_not_empty_list = []
-    for path_list in tqdm(make_meta_files_dict().values()):
+    for path_list in tqdm(make_meta_files_list()):
         for path in path_list:
             df = pd.read_csv(path, sep='\t')
             if not np.all([pd.isna(s) for s in df[column_name]]):
@@ -20,9 +20,18 @@ def files_where_column_not_empty(column_name: str) -> List[str]:
 
 
 def values_in_column(column_name: str) -> Set[str]:
-    """returns a set of all values found in the specified column across all -meta.tsv files"""
+    """
+
+    Parameters
+    ----------
+    column_name: name of a meta column (choose from COLUMN_NAMES)
+
+    Returns
+    -------
+    set of all values found in the specified column across all -meta.tsv files
+    """
     label_set = set()
-    for path_list in tqdm(make_meta_files_dict().values()):
+    for path_list in tqdm(make_meta_files_list()):
         for path in path_list:
             df = pd.read_csv(path, sep='\t')
             new_labels = set(df[column_name])
@@ -31,9 +40,19 @@ def values_in_column(column_name: str) -> Set[str]:
 
 
 def files_where_column_has_value(column_name: str, value: Any) -> List[str]:
-    """returns a list of all -meta.tsv files where the specified column contains the specified value at least once"""
+    """
+
+    Parameters
+    ----------
+    column_name: name of a meta column (choose from COLUMN_NAMES)
+    value: value that might appear in that column
+
+    Returns
+    -------
+    a list of all -meta.tsv files where the specified column contains the specified value at least once
+    """
     files_where_column_has_value_list = []
-    for path_list in tqdm(make_meta_files_dict().values()):
+    for path_list in tqdm(make_meta_files_list()):
         for path in path_list:
             df = pd.read_csv(path, sep='\t')
             if value in set(df[column_name]):
