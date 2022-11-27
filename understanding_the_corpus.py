@@ -58,3 +58,23 @@ def files_where_column_has_value(column_name: str, value: Any) -> List[str]:
             if value in set(df[column_name]):
                 files_where_column_has_value_list.append(path)
     return files_where_column_has_value_list
+
+
+def count_words_in_sentence(sentence_df: pd.DataFrame) -> int:
+    """
+
+    Parameters
+    ----------
+    sentence_df: single sentence DataFrame ("inner DataFrame")
+
+    Returns
+    -------
+    number of words in that sentence
+    Does not count punctuation or genitive markers as words even though they have their own lines in the .conllu files.
+    """
+    filtered_df = sentence_df[(sentence_df['upos'] != 'PUNCT')
+                              & (sentence_df['lemma'] != '’s')
+                              & (sentence_df['lemma'] != '’')]
+    return filtered_df.shape[0]
+
+
