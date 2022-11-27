@@ -42,18 +42,33 @@ def get_meta_file_path(conllu_file_path: str) -> str:
 
 
 def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
-    """takes the path to a .conllu file, returns a pandas DataFrame containing one line per sentence with columns as
-    defined in environment constant COLUMN_NAMES
+    """
+
+    Parameters
+    ----------
+    file_path: path to a .conllu file
+
+    Returns
+    -------
+    pandas DataFrame containing one line per sentence
+    columns as defined in environment constant COLUMN_NAMES
     """
 
     def sentence_to_df_row(sentence) -> pd.DataFrame:
-        """takes a sentence from the conllu parser
-        returns a single-row pandas DataFrame with columns:
-        'sent_id' : e.g. '2015-01-05-commons.seg1.1'
-        'sentence_df' : pandas DataFrame (yes, DataFrame within a DataFrame) containing the linguistic data
-        'newdoc id' :
-            if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
-            else: None (will be filled in later in outer function)
+        """
+
+        Parameters
+        ----------
+        sentence: single sentence from the conllu parser
+
+        Returns
+        -------
+        single-row pandas DataFrame with columns:
+            'sent_id' : e.g. '2015-01-05-commons.seg1.1'
+            'sentence_df' : pandas DataFrame (yes, DataFrame within a DataFrame) containing the linguistic data
+            'newdoc id' :
+                if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
+                else: None (will be filled in later in outer function)
         """
         sentence_row = pd.DataFrame({'sent_id': [sentence.metadata['sent_id'][len('ParlaMint-GB_'):]],
                                      'sentence_df': [pd.DataFrame(list(sentence))]})
