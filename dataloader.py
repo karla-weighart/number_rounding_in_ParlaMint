@@ -1,6 +1,8 @@
 from glob import glob
 from typing import Dict, List
 
+from tqdm.notebook import tqdm
+
 import conllu
 import pandas as pd
 
@@ -101,5 +103,7 @@ def complete_sentences_and_meta_df() -> pd.DataFrame:
     one line per sentence
     columns as defined in environment constant COLUMN_NAMES
     """
-    complete_df = pd.concat([sentences_and_meta_df(path) for path in make_conllu_files_list()])
+
+    path_list = make_conllu_files_list()
+    complete_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
     return complete_df
