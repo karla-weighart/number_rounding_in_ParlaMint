@@ -90,3 +90,16 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
     sentences_df = sentences_df.merge(meta_df)
     return sentences_df
+
+
+def complete_sentences_and_meta_df() -> pd.DataFrame:
+    """
+
+    Returns
+    -------
+    DataFrame containing the entire corpus:
+    one line per sentence
+    columns as defined in environment constant COLUMN_NAMES
+    """
+    complete_df = pd.concat([sentences_and_meta_df(path) for path in make_conllu_files_list()])
+    return complete_df
