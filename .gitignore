@@ -9,7 +9,12 @@ _pycache__
 # Results
 data
 
+# TODOs
+statistics.ipynb
+feature_extraction.py
+
 # random
 code_cemetery.py
 prototyping.ipynb
 moreprototyping.ipynb
+stats_reudig.ipynb
