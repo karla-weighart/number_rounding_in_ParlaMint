@@ -1,4 +1,5 @@
 from glob import glob
+from pathlib import Path
 from typing import Dict, List
 
 from tqdm.notebook import tqdm
@@ -56,7 +57,7 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     columns as defined in environment constant COLUMN_NAMES
     """
 
-    def sentence_to_df_row(sentence) -> pd.DataFrame:
+    def sentence_to_df_row(sentence: conllu.models.TokenList) -> pd.Series:
         """
 
         Parameters
@@ -65,21 +66,21 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
 
         Returns
         -------
-        single-row pandas DataFrame with columns:
+        pandas Series with columns:
             'sent_id' : e.g. '2015-01-05-commons.seg1.1'
             'sentence_df' : pandas DataFrame (yes, DataFrame within a DataFrame) containing the linguistic data
             'newdoc id' :
                 if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
                 else: None (will be filled in later in outer function)
         """
-        sentence_row = pd.DataFrame({'sent_id': [sentence.metadata['sent_id'][len('ParlaMint-GB_'):]],
-                                     'sentence_df': [pd.DataFrame(list(sentence))]})
+        sentence_row = pd.Series({'sent_id': sentence.metadata['sent_id'][len('ParlaMint-GB_'):],
+                                  'sentence': sentence})
         sentence_row['utterance_id'] = sentence.metadata.get('newdoc id')
         return sentence_row
 
     file = open(file_path, 'r', encoding='utf-8').read()
     sentences = conllu.parse(file)
-    sentences_df = pd.concat([sentence_to_df_row(s) for s in sentences])
+    sentences_df = pd.concat((sentence_to_df_row(s) for s in sentences), axis=1).T
 
     # some sentences from sentence_to_df_row() do not come with utterance_ids
     # make them inherit the utterance_id of their predecessor with ffill
@@ -107,3 +108,9 @@ def complete_sentences_and_meta_df() -> pd.DataFrame:
     path_list = make_conllu_files_list()
     complete_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
     return complete_df
+
+
+def save_complete_sentences_and_meta_df(path: str = "C:/Users/karla/Desktop/Zul_Data_all_in_one/data.csv"):
+    filepath = Path(path)
+    complete_df = complete_sentences_and_meta_df()
+    complete_df.to_csv(filepath)
