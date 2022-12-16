@@ -7,7 +7,7 @@ from tqdm.notebook import tqdm
 import conllu
 import pandas as pd
 
-from environment_constants import PATH, COLUMN_NAMES
+from environment_constants import PATH, COLUMN_NAMES, SENTENCE_COLUMNS
 
 
 def make_conllu_files_list() -> List[str]:
@@ -68,14 +68,15 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
         -------
         pandas Series with columns:
             'sent_id' : e.g. '2015-01-05-commons.seg1.1'
-            'sentence_df' : pandas DataFrame (yes, DataFrame within a DataFrame) containing the linguistic data
-            'newdoc id' :
+            'sentence' : ?? TODO: find a way to compress this nicely so I don't run into RAM problems
+            'utterance_id' :
                 if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
                 else: None (will be filled in later in outer function)
         """
         sentence_row = pd.Series({'sent_id': sentence.metadata['sent_id'][len('ParlaMint-GB_'):],
-                                  'sentence': sentence})
-        sentence_row['utterance_id'] = sentence.metadata.get('newdoc id')
+                                  'sentence': pd.DataFrame(sentence)[SENTENCE_COLUMNS],
+                                  'utterance_id': sentence.metadata.get('newdoc id')
+                                  })
         return sentence_row
 
     file = open(file_path, 'r', encoding='utf-8').read()
@@ -91,7 +92,13 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
+
     sentences_df = sentences_df.merge(meta_df)
+
+    # clip off unnecessary letters
+    sentences_df['utterance_id'] = [utterance_id[len('ParlaMint-GB_'):] for utterance_id in sentences_df['utterance_id']]
+    sentences_df['House'] = [house[1] for house in sentences_df['House']]
+
     return sentences_df
 
 
