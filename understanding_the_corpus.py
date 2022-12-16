@@ -1,4 +1,5 @@
 from typing import List, Set, Any
+import conllu
 
 import pandas as pd
 import numpy as np
@@ -60,18 +61,20 @@ def files_where_column_has_value(column_name: str, value: Any) -> List[str]:
     return files_where_column_has_value_list
 
 
-def count_words_in_sentence(sentence_df: pd.DataFrame) -> int:
+def count_words_in_sentence(sentence: conllu.models.TokenList) -> int:
     """
 
     Parameters
     ----------
-    sentence_df: single sentence DataFrame ("inner DataFrame")
+    sentence: TokenList from the conllu parser
 
     Returns
     -------
     number of words in that sentence
     Does not count punctuation or genitive markers as words even though they have their own lines in the .conllu files.
     """
+    sentence_df = pd.DataFrame(sentence)
+
     filtered_df = sentence_df[(sentence_df['upos'] != 'PUNCT')
                               & (sentence_df['lemma'] != '’s')
                               & (sentence_df['lemma'] != '’')]
