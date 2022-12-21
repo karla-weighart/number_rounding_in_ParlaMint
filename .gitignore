@@ -9,11 +9,9 @@ _pycache__
 # Results
 data
 
-# TODOs
-statistics.ipynb
 
 # random
-code_cemetery.py
-prototyping.ipynb
-moreprototyping.ipynb
-stats_reudig.ipynb
+old_stuff
+
+notebooks/prototyping.ipynb
+notebooks/moreprototyping.ipynb
