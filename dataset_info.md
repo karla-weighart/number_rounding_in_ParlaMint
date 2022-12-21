@@ -32,7 +32,7 @@ all sometimes contain '-', but only all of them together
 
 # .conllu (implied) columns
 ## useful
-(therfore contained in `SENTENCE_COLUMNS`in `environment_constants.py`)
+(therefore contained in `SENTENCE_COLUMNS` in `environment_constants.py`)
 - form: concrete form of lemma
 - upos: universal part of speech tag
 - head: index of the word that is the head of this word
