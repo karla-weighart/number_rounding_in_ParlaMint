@@ -1,13 +1,13 @@
 from glob import glob
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from tqdm.notebook import tqdm
 
 import conllu
 import pandas as pd
 
-from environment_constants import PATH, COLUMN_NAMES, SENTENCE_COLUMNS
+from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
 
 def make_conllu_files_list() -> List[str]:
@@ -54,7 +54,7 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     Returns
     -------
     pandas DataFrame containing one line per sentence
-    columns as defined in environment constant COLUMN_NAMES
+    columns as defined in environment constant META_COLUMNS
     """
 
     def sentence_to_df_row(sentence: conllu.models.TokenList) -> pd.Series:
@@ -68,7 +68,7 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
         -------
         pandas Series with columns:
             'sent_id' : e.g. '2015-01-05-commons.seg1.1'
-            'sentence' : ?? TODO: find a way to compress this nicely so I don't run into RAM problems
+            'sentence' : pd.DataFrame
             'utterance_id' :
                 if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
                 else: None (will be filled in later in outer function)
@@ -88,7 +88,7 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
-    meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[COLUMN_NAMES]
+    meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
@@ -96,8 +96,13 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     sentences_df = sentences_df.merge(meta_df)
 
     # clip off unnecessary letters
-    sentences_df['utterance_id'] = [utterance_id[len('ParlaMint-GB_'):] for utterance_id in sentences_df['utterance_id']]
-    sentences_df['House'] = [house[1] for house in sentences_df['House']]
+    sentences_df['utterance_id'] =\
+        [utterance_id[len('ParlaMint-GB_'):] for utterance_id in sentences_df['utterance_id']]
+
+    # compress data: binary datatypes for binary categories
+    sentences_df['upper_house'] = [sentences_df['House'] == 'Upper house']
+    sentences_df['chairperson'] = [sentences_df['Speaker_role'] == 'Chairperson']
+    sentences_df.drop(columns=['House', 'Speaker_role'], inplace=True)
 
     return sentences_df
 
@@ -109,7 +114,7 @@ def complete_sentences_and_meta_df() -> pd.DataFrame:
     -------
     DataFrame containing the entire corpus:
     one line per sentence
-    columns as defined in environment constant COLUMN_NAMES
+    columns as defined in environment constant META_COLUMNS
     """
 
     path_list = make_conllu_files_list()
@@ -117,7 +122,7 @@ def complete_sentences_and_meta_df() -> pd.DataFrame:
     return complete_df
 
 
-def save_complete_sentences_and_meta_df(path: str = "C:/Users/karla/Desktop/Zul_Data_all_in_one/data.csv"):
+def save_complete_sentences_and_meta_df(path: str = "C:/Users/karla/Desktop/Zula_Data_all_in_one/data.csv"):
     filepath = Path(path)
     complete_df = complete_sentences_and_meta_df()
     complete_df.to_csv(filepath)
