@@ -117,7 +117,7 @@ def complete_sentences_and_meta_df() -> pd.DataFrame:
 
     Returns
     -------
-    DataFrame containing the entire corpus:
+    DataFrame containing the entire corpus minus everything said by ghost speakers
     one line per sentence
     columns as defined in environment constant META_COLUMNS
     """
