@@ -3,9 +3,9 @@
 (therefore contained in `META_COLUMNS`in `environment_constants.py`, some of them shortened or modified in `dataloader`)
 
 - ID -> utterance_id (without 'ParlaMint-GB')
-- House: {'Lower house', 'Upper house'} -> upper_house: True, False
+- House: {'Lower house', 'Upper house'} -> 'upper_house': True, False
 - Speaker_role: 'Chairperson' or 'Regular' -> 'chairperson': True, False
-- Speaker_type *: 'MP', 'notMP'
+- Speaker_type *: 'MP', 'notMP' -> 'mp': True, False
 - Speaker_party *: all kinds of different parties
 - Party_status *: 'Coalition', 'Opposition', nan
     - nan with the following names:
@@ -34,7 +34,7 @@
       - 'Wilson, Samuel',
       - 'Wright, Nicholas Thomas'
 - Speaker_name *: all the names
-- Speaker_gender *: 'F', 'M'
+- Speaker_gender *: 'F', 'M' -> 'female': True, False
 
 \* Speaker_type, Speaker_party, Party_status, Speaker_name, Speaker_gender
 all sometimes contain '-', but only all of them together

@@ -107,7 +107,9 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     # compress data: binary datatypes for binary categories
     sentences_df['upper_house'] = (sentences_df['House'] == 'Upper house')
     sentences_df['chairperson'] = (sentences_df['Speaker_role'] == 'Chairperson')
-    sentences_df.drop(columns=['House', 'Speaker_role'], inplace=True)
+    sentences_df['mp'] = (sentences_df['Speaker_type'] == 'MP')
+    sentences_df['female'] = (sentences_df['Speaker_gender'] == 'F')
+    sentences_df.drop(columns=['House', 'Speaker_role', 'Speaker_type', 'Speaker_gender'], inplace=True)
 
     return sentences_df
 
