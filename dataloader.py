@@ -1,6 +1,6 @@
 from glob import glob
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from tqdm.notebook import tqdm
 
@@ -95,13 +95,18 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
 
     sentences_df = sentences_df.merge(meta_df)
 
+    # === data efficiency ===
+
+    # get rid of utterances by ghost speakers
+    sentences_df = sentences_df[sentences_df['Speaker_type'] != '-']
+
     # clip off unnecessary letters
-    sentences_df['utterance_id'] =\
+    sentences_df['utterance_id'] = \
         [utterance_id[len('ParlaMint-GB_'):] for utterance_id in sentences_df['utterance_id']]
 
     # compress data: binary datatypes for binary categories
-    sentences_df['upper_house'] = [sentences_df['House'] == 'Upper house']
-    sentences_df['chairperson'] = [sentences_df['Speaker_role'] == 'Chairperson']
+    sentences_df['upper_house'] = (sentences_df['House'] == 'Upper house')
+    sentences_df['chairperson'] = (sentences_df['Speaker_role'] == 'Chairperson')
     sentences_df.drop(columns=['House', 'Speaker_role'], inplace=True)
 
     return sentences_df
