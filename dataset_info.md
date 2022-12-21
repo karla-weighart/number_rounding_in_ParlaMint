@@ -8,13 +8,39 @@
 - Speaker_type *: 'MP', 'notMP'
 - Speaker_party *: all kinds of different parties
 - Party_status *: 'Coalition', 'Opposition', nan
+    - nan with the following names:
+      - 'Armstrong, Hilary Jane',
+      - 'Browne, Wallace',
+      - 'Campbell, Gregory Lloyd',
+      - 'Colville, John Mark Alexander',
+      - 'Cotter, Brian Joseph Michael',
+      - 'Dodds, Nigel',
+      - 'Donaldson, Jeffrey Mark',
+      - 'Flight, Howard Emerson',
+      - 'Girvan, William Paul',
+      - 'Harries, Richard Douglas',
+      - 'Hay, William',
+      - 'Little Pengelly, Emma',
+      - 'McCrea, William',
+      - 'Morrow, Maurice',
+      - 'Paisley, Ian Richard Kyle',
+      - 'Perham, Michael',
+      - 'Robinson, Gavin James',
+      - 'Scott-Joynt, Michael Charles',
+      - 'Shannon, Richard James',
+      - 'Simpson, Thomas David',
+      - 'Wharton, John Martin',
+      - 'Willis, George Philip',
+      - 'Wilson, Samuel',
+      - 'Wright, Nicholas Thomas'
 - Speaker_name *: all the names
 - Speaker_gender *: 'F', 'M'
 
-`* Speaker_type, Speaker_party, Party_status, Speaker_name, Speaker_gender
+\* Speaker_type, Speaker_party, Party_status, Speaker_name, Speaker_gender
 all sometimes contain '-', but only all of them together
+-> refer to this as 'ghost speaker'
 -> those instances are saved in hyphen_data.csv
--> #TODO: will be discarded from main dataframe
+-> they are discarded from main dataframe in `dataloader`
 
 ## not used for any analysis
 (therefore discarded in `dataloader`)
@@ -35,7 +61,7 @@ all sometimes contain '-', but only all of them together
 (therefore contained in `SENTENCE_COLUMNS` in `environment_constants.py`)
 - form: concrete form of lemma
 - upos: universal part of speech tag
-- head: index of the word that is the head of this word
+- head: index of the word that is the head of this word, caveat: starts at 1, but my DataFrames start at 0!
 
 ## not used for any analysis
 (therefore discarded in `dataloader`)
