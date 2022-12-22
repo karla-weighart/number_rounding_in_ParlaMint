@@ -114,22 +114,18 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
     return sentences_df
 
 
-def complete_sentences_and_meta_df() -> pd.DataFrame:
+def multiple_files_sentences_and_meta_df(number_of_files: int = None) -> pd.DataFrame:
     """
 
     Returns
     -------
-    DataFrame containing the entire corpus minus everything said by ghost speakers
+    DataFrame containing info from the first n conllu files
     one line per sentence
     columns as defined in environment constant META_COLUMNS
     """
-
-    path_list = make_conllu_files_list()
-    complete_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
-    return complete_df
-
-
-def save_complete_sentences_and_meta_df(path: str = "C:/Users/karla/Desktop/Zula_Data_all_in_one/data.csv"):
-    filepath = Path(path)
-    complete_df = complete_sentences_and_meta_df()
-    complete_df.to_csv(filepath)
+    if number_of_files == None:
+        path_list = make_conllu_files_list()
+    else:
+        path_list = make_conllu_files_list()[:number_of_files]
+    partial_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
+    return partial_df
