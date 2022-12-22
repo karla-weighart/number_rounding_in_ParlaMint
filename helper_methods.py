@@ -13,5 +13,9 @@ def read_inner_dataframe(row: pd.Series) -> pd.DataFrame:
     -------
     sentence DataFrame (= inner DataFrame)
     """
-    # noinspection PyTypeChecker
-    return pd.read_csv(StringIO(row['sentence']), sep='\t')
+    return pd.DataFrame(row['sentence'])
+
+# TODO
+def apply_to_all_rows(dataframe: pd.DataFrame, func: callable, apply_to_column: str, result_to_column: str) \
+        -> pd.DataFrame:
+    dataframe[result_to_column] = dataframe.apply(func, axis=1)

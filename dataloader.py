@@ -74,7 +74,7 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
                 else: None (will be filled in later in outer function)
         """
         sentence_row = pd.Series({'sent_id': sentence.metadata['sent_id'][len('ParlaMint-GB_'):],
-                                  'sentence': pd.DataFrame(sentence)[SENTENCE_COLUMNS],
+                                  'sentence': pd.DataFrame(sentence)[SENTENCE_COLUMNS].to_dict(),
                                   'utterance_id': sentence.metadata.get('newdoc id')
                                   })
         return sentence_row

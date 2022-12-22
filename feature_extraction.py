@@ -47,4 +47,3 @@ def find_pattern_in_sentence(pattern: List[Tuple[str]], row: pd.Series) -> List[
         if np.alltrue([sentence_df.iloc[i+p][pattern[p][0]] == pattern[p][1] for p in range(len(pattern))]):
             search_results.append(sentence_df.iloc[i:i+len(pattern)]['form'])
     return search_results
-
