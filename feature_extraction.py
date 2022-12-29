@@ -8,7 +8,7 @@ from typing import List, Tuple
 from helper_methods import read_inner_dataframe
 
 
-def count_words_in_sentence(row: pd.Series) -> int:
+def count_words_in_row(row: pd.Series) -> int:
     """
 
     Parameters
