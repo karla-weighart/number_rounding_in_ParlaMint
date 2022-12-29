@@ -9,6 +9,8 @@ import pandas as pd
 
 from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
+from helper_methods import read_inner_dataframe
+
 
 def make_conllu_files_list() -> List[str]:
     """
@@ -74,7 +76,7 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
                 else: None (will be filled in later in outer function)
         """
         sentence_row = pd.Series({'sent_id': sentence.metadata['sent_id'][len('ParlaMint-GB_'):],
-                                  'sentence': pd.DataFrame(sentence)[SENTENCE_COLUMNS].to_dict(),
+                                  'sentence': pd.DataFrame(sentence)[SENTENCE_COLUMNS].to_dict('list'),
                                   'utterance_id': sentence.metadata.get('newdoc id')
                                   })
         return sentence_row
@@ -123,9 +125,15 @@ def multiple_files_sentences_and_meta_df(number_of_files: int = None) -> pd.Data
     one line per sentence
     columns as defined in environment constant META_COLUMNS
     """
-    if number_of_files == None:
+    if number_of_files is None:
         path_list = make_conllu_files_list()
     else:
         path_list = make_conllu_files_list()[:number_of_files]
     partial_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
     return partial_df
+
+
+def load_saved_df(path: str):
+    saved_df = pd.read_csv(path, index_col=0)
+    saved_df['sentence'] = saved_df['sentence'].map(read_inner_dataframe)
+    return saved_df
