@@ -1,15 +1,12 @@
-from glob import glob
-from pathlib import Path
-from typing import List, Tuple
-
-from tqdm.notebook import tqdm
+from typing import List
 
 import conllu
 import pandas as pd
 
-from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
+from glob import glob
+from tqdm.notebook import tqdm
 
-from helper_methods import read_inner_dataframe
+from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
 
 def make_conllu_files_list() -> List[str]:
@@ -46,13 +43,14 @@ def get_meta_file_path(conllu_file_path: str) -> str:
     return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
-def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True) -> pd.DataFrame:
+def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True, remove_enum: bool = True) -> pd.DataFrame:
     """
 
     Parameters
     ----------
     file_path: path to a .conllu file
     remove_ghosts: whether utterances by ghost speakers will be removed entirely
+    remove_enum: whether utterances that only contain "1." and the like will be removed entirely
 
     Returns
     -------
@@ -90,6 +88,10 @@ def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True) -> pd.Data
     # make them inherit the utterance_id of their predecessor with ffill
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
+    if remove_enum:
+
+        pass #TODO
+
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
     meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
 
@@ -111,11 +113,12 @@ def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True) -> pd.Data
         # compress data: binary datatype if removing ghosts makes category binary
         sentences_df['mp'] = (sentences_df['Speaker_type'] == 'MP')
         sentences_df['female'] = (sentences_df['Speaker_gender'] == 'F')
+        sentences_df.drop(columns=['Speaker_type', 'Speaker_gender'], inplace=True)
 
     # compress data: binary datatype for binary categories
     sentences_df['upper_house'] = (sentences_df['House'] == 'Upper house')
     sentences_df['chairperson'] = (sentences_df['Speaker_role'] == 'Chairperson')
-    sentences_df.drop(columns=['House', 'Speaker_role', 'Speaker_type', 'Speaker_gender'], inplace=True)
+    sentences_df.drop(columns=['House', 'Speaker_role'], inplace=True)
 
     return sentences_df
 
@@ -135,9 +138,3 @@ def multiple_files_sentences_and_meta_df(number_of_files: int = None) -> pd.Data
         path_list = make_conllu_files_list()[:number_of_files]
     partial_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
     return partial_df
-
-
-def load_saved_df(path: str):
-    saved_df = pd.read_csv(path, index_col=0)
-    saved_df['sentence'] = saved_df['sentence'].map(read_inner_dataframe)
-    return saved_df
