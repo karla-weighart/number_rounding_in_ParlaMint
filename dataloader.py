@@ -46,12 +46,13 @@ def get_meta_file_path(conllu_file_path: str) -> str:
     return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
-def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
+def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True) -> pd.DataFrame:
     """
 
     Parameters
     ----------
     file_path: path to a .conllu file
+    remove_ghosts: whether utterances by ghost speakers will be removed entirely
 
     Returns
     -------
@@ -99,18 +100,21 @@ def sentences_and_meta_df(file_path: str) -> pd.DataFrame:
 
     # === data efficiency ===
 
-    # get rid of utterances by ghost speakers
-    sentences_df = sentences_df[sentences_df['Speaker_type'] != '-']
-
     # clip off unnecessary letters
     sentences_df['utterance_id'] = \
         [utterance_id[len('ParlaMint-GB_'):] for utterance_id in sentences_df['utterance_id']]
 
-    # compress data: binary datatypes for binary categories
+    if remove_ghosts:
+        # get rid of utterances by ghost speakers
+        sentences_df = sentences_df[sentences_df['Speaker_type'] != '-']
+
+        # compress data: binary datatype if removing ghosts makes category binary
+        sentences_df['mp'] = (sentences_df['Speaker_type'] == 'MP')
+        sentences_df['female'] = (sentences_df['Speaker_gender'] == 'F')
+
+    # compress data: binary datatype for binary categories
     sentences_df['upper_house'] = (sentences_df['House'] == 'Upper house')
     sentences_df['chairperson'] = (sentences_df['Speaker_role'] == 'Chairperson')
-    sentences_df['mp'] = (sentences_df['Speaker_type'] == 'MP')
-    sentences_df['female'] = (sentences_df['Speaker_gender'] == 'F')
     sentences_df.drop(columns=['House', 'Speaker_role', 'Speaker_type', 'Speaker_gender'], inplace=True)
 
     return sentences_df
