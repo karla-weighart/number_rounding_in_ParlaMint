@@ -1,5 +1,6 @@
-import ast
 import pandas as pd
+
+from ast import literal_eval
 
 
 def read_inner_dataframe(cell: str) -> pd.DataFrame:
@@ -13,10 +14,4 @@ def read_inner_dataframe(cell: str) -> pd.DataFrame:
     -------
     sentence DataFrame (= inner DataFrame)
     """
-    return pd.DataFrame(ast.literal_eval(cell))  # TODO doesnt work
-
-
-# TODO
-# def apply_to_all_rows(dataframe: pd.DataFrame, func: callable, apply_to_column: str, result_to_column: str) \
-#         -> pd.DataFrame:
-#    dataframe[result_to_column] = dataframe.apply(func, axis=1)
+    return pd.DataFrame(literal_eval(cell))

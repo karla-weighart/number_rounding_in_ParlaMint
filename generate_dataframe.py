@@ -123,7 +123,7 @@ def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True, remove_enu
     return sentences_df
 
 
-def multiple_files_sentences_and_meta_df(number_of_files: int = None) -> pd.DataFrame:
+def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = None) -> pd.DataFrame:
     """
 
     Returns
