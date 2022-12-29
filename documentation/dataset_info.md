@@ -1,6 +1,6 @@
 # '-meta.tsv' columuns
 ## useful
-(therefore contained in `META_COLUMNS`in `environment_constants.py`, some of them shortened or modified in `dataloader`)
+(therefore contained in `META_COLUMNS`in `environment_constants`, some of them shortened or modified in `dataloader`)
 
 - ID -> utterance_id (without 'ParlaMint-GB')
 - House: {'Lower house', 'Upper house'} -> 'upper_house': True, False
@@ -58,7 +58,7 @@ all sometimes contain '-', but only all of them together
 
 # .conllu (implied) columns
 ## useful
-(therefore contained in `SENTENCE_COLUMNS` in `environment_constants.py`)
+(therefore contained in `SENTENCE_COLUMNS` in `environment_constants`)
 - form: concrete form of lemma
 - upos: universal part of speech tag
 - head: index of the word that is the head of this word, caveat: starts at 1, but my DataFrames start at 0!
