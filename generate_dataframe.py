@@ -84,8 +84,10 @@ def sentences_and_meta_df(file_path: str,
                 if the sentence is the first of utterance: utterance ID (e.g. ParlaMint-GB_2015-01-05-commons.u1)
                 else: None (will be filled in later in outer function)
         """
+        inner_dataframe = pd.DataFrame(sentence)[SENTENCE_COLUMNS]
+        inner_dataframe['head'] = inner_dataframe['head'] - 1
         sentence_row = pd.Series({'sent_id': sentence.metadata['sent_id'][len('ParlaMint-GB_'):],
-                                  'sentence': pd.DataFrame(sentence)[SENTENCE_COLUMNS].to_dict('list'),
+                                  'sentence': inner_dataframe.to_dict('list'),
                                   'utterance_id': sentence.metadata.get('newdoc id')
                                   })
         return sentence_row
