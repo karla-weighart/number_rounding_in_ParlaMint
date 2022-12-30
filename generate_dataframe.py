@@ -6,6 +6,8 @@ import pandas as pd
 from glob import glob
 from tqdm.notebook import tqdm
 
+from helper_methods import is_enum
+
 from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
 
@@ -43,14 +45,17 @@ def get_meta_file_path(conllu_file_path: str) -> str:
     return conllu_file_path[:-len('.conllu')] + '-meta.tsv'
 
 
-def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True, remove_enum: bool = True) -> pd.DataFrame:
+def sentences_and_meta_df(file_path: str,
+                          remove_ghosts: bool = True,
+                          remove_enum: bool = True)\
+        -> pd.DataFrame:
     """
 
     Parameters
     ----------
     file_path: path to a .conllu file
-    remove_ghosts: whether utterances by ghost speakers will be removed entirely
-    remove_enum: whether utterances that only contain "1." and the like will be removed entirely
+    remove_ghosts: whether utterances by ghost speakers will be removed
+    remove_enum: whether utterances that only contain "1." and the like will be removed
 
     Returns
     -------
@@ -88,9 +93,9 @@ def sentences_and_meta_df(file_path: str, remove_ghosts: bool = True, remove_enu
     # make them inherit the utterance_id of their predecessor with ffill
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
+    # remove sentences of the form "2."
     if remove_enum:
-
-        pass #TODO
+        sentences_df = sentences_df[sentences_df['sentence'].map(lambda cell: not is_enum(pd.DataFrame(cell)))]
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
     meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
