@@ -1,29 +1,57 @@
 import numpy as np
 import pandas as pd
 
-import conllu
+from word2number import w2n
 
 from typing import List, Tuple
 
 from helper_methods import inner_dataframe_from_row
 
 
-def find_pattern_in_sentence(pattern: List[Tuple[str]], row: pd.Series) -> List[pd.DataFrame]:
+def concordance_modified_by(cell: pd.DataFrame, start_index: int, depth: int = 1) -> pd.DataFrame:
     """
 
     Parameters
     ----------
-    pattern: [(column, value), ...] that should be matched. the tuples have to be consecutive.
-    row: row of outer dataframe containing info for 1 sentence
+    cell: inner dataframe
+    start_index: index of the word whose modifiers will be returned
+    depth: how often the function will be called recursively, i.e. how far down in the syntax tree we move
 
     Returns
     -------
-    List of dataframes, each dataframe contains the concrete forms that matched the pattern
+    dataframe containing only the lines that have the word with the given index as their parent or higher-level ancestor
     """
-    search_results = []
-    sentence_df = inner_dataframe_from_row(row)  # TODO: inner_dataframe_from_row has become deprecated
+    this_iteration_df = cell[cell['head'] == start_index]
 
-    for i in range(sentence_df.shape[0] - len(pattern) + 1):
-        if np.alltrue([sentence_df.iloc[i+p][pattern[p][0]] == pattern[p][1] for p in range(len(pattern))]):
-            search_results.append(sentence_df.iloc[i:i+len(pattern)]['form'])
-    return search_results
+    if depth == 1:
+        return this_iteration_df
+    else:
+        return pd.concat(
+                [this_iteration_df] +
+                [concordance_modified_by(cell, index, depth=depth-1) for index in this_iteration_df.index]
+            ).sort_index()
+    # TODO: add column for depth_level
+
+
+def concordance_modifies(cell: pd.DataFrame, start_index: int, depth: int = 1):
+    """
+
+    Parameters
+    ----------
+    cell: inner dataframe
+    start_index: index of the word that modifies the words that will be returned
+    depth: how often the function will be called recursively, i.e. how far up in the syntax tree we move
+
+    Returns
+    -------
+    dataframe containing only the lines that have the word with the given index as their child or higher-level descendant
+    """
+    this_iteration_df = pd.DataFrame(cell.iloc[cell.iloc[start_index]['head']]).T
+    if depth == 1:
+        return this_iteration_df
+    else:
+        return pd.concat(
+            [this_iteration_df] +
+            [concordance_modifies(cell, index, depth=depth-1) for index in this_iteration_df.index]
+        ).sort_index()
+    # TODO: add column for depth_level
