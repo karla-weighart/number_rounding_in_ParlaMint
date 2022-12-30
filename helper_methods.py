@@ -21,3 +21,22 @@ def inner_dataframe_from_row(row: pd.Series) -> pd.DataFrame:
 def is_enum(cell: pd.DataFrame) -> bool:
     return cell.shape[0] == 2 and (cell['upos'].iloc[0], cell['upos'].iloc[1]) in {('X', 'PUNCT'), ('NUM', 'PUNCT')}
 
+
+def count_words(cell: pd.DataFrame) -> int:
+    """
+
+    Parameters
+    ----------
+    cell: single sentence cell of outer DataFrame in dict format
+
+    Returns
+    -------
+    number of words in that sentence
+    Does not count punctuation or genitive markers as words even though they have their own lines in the .conllu files.
+    """
+    sentence_df = pd.DataFrame(cell)
+
+    filtered_df = sentence_df[(sentence_df['upos'] != 'PUNCT')
+                              & (sentence_df['form'] != '’s')
+                              & (sentence_df['form'] != '’')]
+    return filtered_df.shape[0]

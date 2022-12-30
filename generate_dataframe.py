@@ -6,7 +6,7 @@ import pandas as pd
 from glob import glob
 from tqdm.notebook import tqdm
 
-from helper_methods import is_enum
+from helper_methods import is_enum, count_words
 
 from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
@@ -47,6 +47,7 @@ def get_meta_file_path(conllu_file_path: str) -> str:
 
 def sentences_and_meta_df(file_path: str,
                           remove_ghosts: bool = True,
+                          min_sentence_length: int = 3,
                           remove_enum: bool = True)\
         -> pd.DataFrame:
     """
@@ -55,6 +56,7 @@ def sentences_and_meta_df(file_path: str,
     ----------
     file_path: path to a .conllu file
     remove_ghosts: whether utterances by ghost speakers will be removed
+    min_sentence_length: sentences below the specified length will be removed
     remove_enum: whether utterances that only contain "1." and the like will be removed
 
     Returns
@@ -93,8 +95,13 @@ def sentences_and_meta_df(file_path: str,
     # make them inherit the utterance_id of their predecessor with ffill
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
+    # === data cleaning ===
+
+    # remove short sentences
+    sentences_df = sentences_df[sentences_df['sentence'].map(count_words) >= min_sentence_length]
+
     # remove sentences of the form "2."
-    if remove_enum:
+    if remove_enum and min_sentence_length < 3:
         sentences_df = sentences_df[sentences_df['sentence'].map(lambda cell: not is_enum(pd.DataFrame(cell)))]
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
