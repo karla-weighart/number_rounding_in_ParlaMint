@@ -147,8 +147,15 @@ def sentences_and_meta_df(file_path: str,
     return sentences_df
 
 
-def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = None) -> pd.DataFrame:
+def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = None,
+                                                       remove_ghosts: bool = True,
+                                                       min_sentence_length: int = 3,
+                                                       remove_enum: bool = True,
+                                                       only_with_nums: bool = True) \
+        -> pd.DataFrame:
     """
+    number_of_files: how many .conllu files are used to generate the dataframe
+    remove_ghosts, min_sentence_length, remove_enum, only_with_nums: passed to sentences_and_meta_df
 
     Returns
     -------
@@ -160,5 +167,11 @@ def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = No
         path_list = make_conllu_files_list()
     else:
         path_list = make_conllu_files_list()[:number_of_files]
-    partial_df = pd.concat(tqdm((sentences_and_meta_df(path) for path in path_list), total=len(path_list)))
-    return partial_df
+    multiple_file_df = pd.concat(tqdm((sentences_and_meta_df(
+            path,
+            remove_ghosts=remove_ghosts,
+            min_sentence_length=min_sentence_length,
+            remove_enum=remove_enum,
+            only_with_nums=only_with_nums
+        ) for path in path_list), total=len(path_list)))
+    return multiple_file_df
