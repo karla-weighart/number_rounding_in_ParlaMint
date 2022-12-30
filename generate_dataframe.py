@@ -98,6 +98,7 @@ def sentences_and_meta_df(file_path: str,
     # make them inherit the utterance_id of their predecessor with ffill
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
+
     # === data cleaning ===
 
     # remove short sentences
@@ -111,6 +112,7 @@ def sentences_and_meta_df(file_path: str,
     if only_with_nums:
         sentences_df = sentences_df[sentences_df['sentence'].map(contains_num)]
 
+
     # === combining sentence data and meta data ===
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
@@ -120,6 +122,7 @@ def sentences_and_meta_df(file_path: str,
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
 
     sentences_df = sentences_df.merge(meta_df)
+
 
     # === data efficiency ===
 
