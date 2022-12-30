@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from ast import literal_eval
 
@@ -40,3 +41,9 @@ def count_words(cell: pd.DataFrame) -> int:
                               & (sentence_df['form'] != '’s')
                               & (sentence_df['form'] != '’')]
     return filtered_df.shape[0]
+
+
+def contains_num(cell: dict):
+    contains_digit = np.any([str(x) in '.'.join(cell['form']) for x in range(10)])
+    contains_numeral = 'NUM' in cell['upos'] or 'X' in cell['upos']
+    return contains_digit or contains_numeral

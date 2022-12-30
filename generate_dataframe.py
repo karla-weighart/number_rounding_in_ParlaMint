@@ -6,7 +6,7 @@ import pandas as pd
 from glob import glob
 from tqdm.notebook import tqdm
 
-from helper_methods import is_enum, count_words
+from helper_methods import is_enum, count_words, contains_num
 
 from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
@@ -48,16 +48,19 @@ def get_meta_file_path(conllu_file_path: str) -> str:
 def sentences_and_meta_df(file_path: str,
                           remove_ghosts: bool = True,
                           min_sentence_length: int = 3,
-                          remove_enum: bool = True)\
+                          remove_enum: bool = True,
+                          only_with_nums: bool = True)\
         -> pd.DataFrame:
     """
 
     Parameters
     ----------
     file_path: path to a .conllu file
+
     remove_ghosts: whether utterances by ghost speakers will be removed
     min_sentence_length: sentences below the specified length will be removed
     remove_enum: whether utterances that only contain "1." and the like will be removed
+    only_with_nums: whether utterances that do not contain any numbers will be removed
 
     Returns
     -------
@@ -103,6 +106,12 @@ def sentences_and_meta_df(file_path: str,
     # remove sentences of the form "2."
     if remove_enum and min_sentence_length < 3:
         sentences_df = sentences_df[sentences_df['sentence'].map(lambda cell: not is_enum(pd.DataFrame(cell)))]
+
+    # remove sentences that do not contain any numbers
+    if only_with_nums:
+        sentences_df = sentences_df[sentences_df['sentence'].map(contains_num)]
+
+    # === combining sentence data and meta data ===
 
     # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
     meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
