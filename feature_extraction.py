@@ -3,7 +3,7 @@ import pandas as pd
 
 from word2number import w2n
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from helper_methods import inner_dataframe_from_row
 
@@ -55,3 +55,25 @@ def concordance_modifies(cell: pd.DataFrame, start_index: int, depth: int = 1):
             [concordance_modifies(cell, index, depth=depth-1) for index in this_iteration_df.index]
         ).sort_index()
     # TODO: add column for depth_level
+
+
+def find_roundedness(num: Union[int, float]) -> Tuple[int, int]:
+    """
+
+    Parameters
+    ----------
+    num: number to be investigated
+    (example: 304000.0)
+
+    Returns
+    -------
+    number of 'proper' digits, i.e. everything that is not a trailing zero
+    (in example: 3, because '304' are proper digits)
+
+    number of trailing zeroes
+    (in example: 4, because '000.0' are trailing zeroes)
+    """
+    num_str = str(num).lstrip('0').replace('.', '')
+    proper_digits = len(num_str.rstrip('0'))
+    trailing_zeroes = len(num_str) - proper_digits
+    return proper_digits, trailing_zeroes
