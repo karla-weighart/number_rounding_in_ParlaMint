@@ -1,5 +1,3 @@
-from typing import List
-
 import conllu
 import pandas as pd
 
@@ -11,7 +9,7 @@ from helper_methods import is_enum, count_words, contains_num
 from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
 
 
-def make_conllu_files_list() -> List[str]:
+def make_conllu_files_list() -> list[str]:
     """
     Returns
     -------
@@ -21,7 +19,7 @@ def make_conllu_files_list() -> List[str]:
     return conllu_files_list
 
 
-def make_meta_files_list() -> List[str]:
+def make_meta_files_list() -> list[str]:
     """
     Returns
     -------
