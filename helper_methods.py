@@ -1,29 +1,14 @@
 import pandas as pd
 import numpy as np
 
-from ast import literal_eval
+
+def is_enum(cell: dict) -> bool:
+    sentence_df = pd.DataFrame(cell)
+    return sentence_df.shape[0] == 2 and\
+        (sentence_df['upos'].iloc[0], sentence_df['upos'].iloc[1]) in {('X', 'PUNCT'), ('NUM', 'PUNCT')}
 
 
-def inner_dataframe_from_row(row: pd.Series) -> pd.DataFrame:
-    """
-
-    Parameters
-    ----------
-    row: single row of the outer DataFrame, corresponds to one sentence
-
-    Returns
-    -------
-    sentence DataFrame (= inner DataFrame)
-    """
-    cell = row['sentence']
-    return pd.DataFrame(cell)
-
-
-def is_enum(cell: pd.DataFrame) -> bool:
-    return cell.shape[0] == 2 and (cell['upos'].iloc[0], cell['upos'].iloc[1]) in {('X', 'PUNCT'), ('NUM', 'PUNCT')}
-
-
-def count_words(cell: pd.DataFrame) -> int:
+def count_words(cell: dict) -> int:
     """
 
     Parameters
@@ -45,5 +30,5 @@ def count_words(cell: pd.DataFrame) -> int:
 
 def contains_num(cell: dict):
     contains_digit = np.any([str(x) in '.'.join(cell['form']) for x in range(10)])
-    contains_numeral = 'NUM' in cell['upos'] or 'X' in cell['upos']
+    contains_numeral = 'NUM' in cell['upos']  # or 'X' in cell['upos']
     return contains_digit or contains_numeral
