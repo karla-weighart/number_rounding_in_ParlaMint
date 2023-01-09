@@ -77,3 +77,27 @@ def find_roundedness(num: Union[int, float]) -> Tuple[int, int]:
     proper_digits = len(num_str.rstrip('0'))
     trailing_zeroes = len(num_str) - proper_digits
     return proper_digits, trailing_zeroes
+
+
+def parse_num_group(num_group: list[str, ...]) -> float:
+    """
+
+    Parameters
+    ----------
+    num_group: list of strings that represent numbers
+        either as English words ('five') or as digits ('500', '3.14')
+
+    Returns
+    -------
+    numerical value of what this string would be read as by a human
+    """
+    # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
+    # therefore we initialize with the neutral element of multiplication
+    value = 1
+    for num in num_group:
+        try:
+            num_value = float(num)
+        except ValueError:
+            num_value = w2n.word_to_num(num)
+        value *= num_value
+    return value
