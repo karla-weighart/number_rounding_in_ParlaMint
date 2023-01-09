@@ -1,11 +1,8 @@
-import numpy as np
 import pandas as pd
 
 from word2number import w2n
 
-from typing import List, Tuple, Union
-
-from helper_methods import inner_dataframe_from_row
+from typing import Union
 
 
 def concordance_modified_by(cell: pd.DataFrame, start_index: int, depth: int = 1) -> pd.DataFrame:
@@ -57,7 +54,7 @@ def concordance_modifies(cell: pd.DataFrame, start_index: int, depth: int = 1):
     # TODO: add column for depth_level
 
 
-def find_roundedness(num: Union[int, float]) -> Tuple[int, int]:
+def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
     """
 
     Parameters
