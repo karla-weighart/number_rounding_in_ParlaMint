@@ -5,7 +5,7 @@ from word2number import w2n
 from typing import Union
 
 
-def concordance_modified_by(cell: pd.DataFrame, start_index: int, depth: int = 1) -> pd.DataFrame:
+def concordance_descendants(cell: pd.DataFrame, start_index: int, depth: int = 1) -> pd.DataFrame:
     """
 
     Parameters
@@ -25,12 +25,12 @@ def concordance_modified_by(cell: pd.DataFrame, start_index: int, depth: int = 1
     else:
         return pd.concat(
                 [this_iteration_df] +
-                [concordance_modified_by(cell, index, depth=depth-1) for index in this_iteration_df.index]
+                [concordance_descendants(cell, index, depth=depth - 1) for index in this_iteration_df.index]
             ).sort_index()
     # TODO: add column for depth_level
 
 
-def concordance_modifies(cell: pd.DataFrame, start_index: int, depth: int = 1):
+def concordance_ancestors(cell: pd.DataFrame, start_index: int, depth: int = 1):
     """
 
     Parameters
@@ -49,7 +49,7 @@ def concordance_modifies(cell: pd.DataFrame, start_index: int, depth: int = 1):
     else:
         return pd.concat(
             [this_iteration_df] +
-            [concordance_modifies(cell, index, depth=depth-1) for index in this_iteration_df.index]
+            [concordance_ancestors(cell, index, depth=depth - 1) for index in this_iteration_df.index]
         ).sort_index()
     # TODO: add column for depth_level
 
