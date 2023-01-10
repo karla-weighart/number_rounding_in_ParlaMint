@@ -76,7 +76,7 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
     return proper_digits, trailing_zeroes
 
 
-def parse_num_group(num_group: list[str, ...]) -> float:
+def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
     """
 
     Parameters
@@ -89,12 +89,21 @@ def parse_num_group(num_group: list[str, ...]) -> float:
     numerical value of what this string would be read as by a human
     """
     # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
+    # TODO: CAVEAT: for something like ['fifty' 'five'], this will yield 250 instead of 55. let's hope we don't have
+    #  this in the dataset
     # therefore we initialize with the neutral element of multiplication
     value = 1
+
     for num in num_group:
-        try:
+        if '.' in num:
             num_value = float(num)
-        except ValueError:
-            num_value = w2n.word_to_num(num)
+        else:
+            try:
+                num_value = int(num)
+            except ValueError:
+                try:
+                    num_value = w2n.word_to_num(num)
+                except ValueError:
+                    return "needs manual inspection"
         value *= num_value
     return value
