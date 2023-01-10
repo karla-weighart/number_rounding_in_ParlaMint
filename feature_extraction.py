@@ -76,6 +76,35 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
     return proper_digits, trailing_zeroes
 
 
+def group_nums(cell: dict) -> Union[dict, str]:
+    sentence = pd.DataFrame(cell)
+    sentence.loc[sentence['upos'] == 'NUM', 'form'] = sentence.loc[sentence['upos'] == 'NUM', 'form'].map(lambda x: [x])
+
+    def _inner_group_nums(_sentence: pd.DataFrame) -> Union[pd.DataFrame, str]:
+        numerals_df = _sentence.loc[_sentence['upos'] == 'NUM']
+        # if no numbers modify each other, nothing needs to be done
+        if (set(numerals_df.index) & set(numerals_df['head'])) == set():
+            return _sentence
+        for numeral_index in numerals_df.index:
+          #  numerals_df = _sentence[_sentence['upos'] == 'NUM']
+            if _sentence.iloc[numeral_index]['head'] in numerals_df.index:
+                ancestor_row = concordance_ancestors(_sentence, numeral_index).iloc[0]
+                if ancestor_row.name != numeral_index+1:
+                    return "needs manual inspection"
+                _sentence.iloc[numeral_index]['form'].extend(ancestor_row['form'])
+                _sentence.iloc[numeral_index] = pd.Series([_sentence.iloc[numeral_index]['form'], 'NUM', ancestor_row['head']])
+                _sentence.drop(index=numeral_index + 1, inplace=True)
+                _sentence.loc[_sentence['head'] > numeral_index, 'head'] -= 1
+                _sentence.reset_index(drop=True, inplace=True)
+        _sentence = _inner_group_nums(_sentence)
+        return _sentence
+
+    try:
+        return _inner_group_nums(sentence).to_dict('list')
+    except AttributeError:
+        return "needs manual inspection"
+
+
 def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
     """
 
