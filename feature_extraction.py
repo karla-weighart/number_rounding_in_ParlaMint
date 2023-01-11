@@ -77,6 +77,7 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
 
 
 def group_nums(cell: dict) -> Union[dict, str]:
+    # TODO: test this more!
     """
 
     Parameters
@@ -142,7 +143,10 @@ def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
 
     for num in num_group:
         if '.' in num:
-            num_value = float(num)
+            try:
+                num_value = float(num)
+            except ValueError:
+                return "needs manual inspection"
         else:
             try:
                 num_value = int(num)
