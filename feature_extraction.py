@@ -24,9 +24,9 @@ def concordance_descendants(cell: pd.DataFrame, start_index: int, depth: int = 1
         return this_iteration_df
     else:
         return pd.concat(
-                [this_iteration_df] +
-                [concordance_descendants(cell, index, depth=depth - 1) for index in this_iteration_df.index]
-            ).sort_index()
+            [this_iteration_df] +
+            [concordance_descendants(cell, index, depth=depth - 1) for index in this_iteration_df.index]
+        ).sort_index()
     # TODO: add column for depth_level
 
 
@@ -78,6 +78,11 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
 
 def group_nums(cell: dict) -> Union[dict, str]:
     # TODO: test this more!
+    # TODO: (maybe)
+    #  instead of ['roughly', ['7', 'hundred', 'million']]
+    #  return ['roughly', ('numgroup', ['7', 'hundred', 'million'])]
+    #  and for cconj: ['between', ('cconj', ['7', 'and', '8'])]
+    #  and for '-' or 'to': ['from', ('range', ['7', 'to', '8'])]
     """
 
     Parameters
@@ -105,15 +110,28 @@ def group_nums(cell: dict) -> Union[dict, str]:
         for numeral_index in numerals_df.index:
             if _sentence.iloc[numeral_index]['head'] in numerals_df.index:
                 ancestor_row = concordance_ancestors(_sentence, numeral_index).iloc[0]
-                if ancestor_row.name != numeral_index+1:
+
+                # in most cases, two numerals referring to each other are actually part of the same number
+                # e.g. "200 thousand" = 200 000
+                # if this is the case, concatenate to one number and adjust the rest of the dataframe
+                if ancestor_row.name == numeral_index + 1:
+                    _sentence.iloc[numeral_index]['form'].extend(ancestor_row['form'])
+                    _sentence.iloc[numeral_index] = pd.Series([_sentence.iloc[numeral_index]['form'],
+                                                               'NUM',
+                                                               ancestor_row['head']])
+                    _sentence.drop(index=numeral_index + 1, inplace=True)
+                    _sentence.loc[_sentence['head'] > numeral_index, 'head'] -= 1
+                    _sentence.reset_index(drop=True, inplace=True)
+
+                # sometimes, one number refers to another but there is an "and", "or", "to", "-" between the two
+                # in this case, make both numbers refer to the conjunction instead
+                elif ancestor_row.name == numeral_index + 2 \
+                        and \
+                        _sentence.iloc[numeral_index + 1]['upos'] in {'CCONJ', 'ADP', 'SYM'}:
+                    return "needs manual inspection" # TODO: make NUMs refer to the conjunction to disentangle
+                else:
                     return "needs manual inspection"
-                _sentence.iloc[numeral_index]['form'].extend(ancestor_row['form'])
-                _sentence.iloc[numeral_index] = pd.Series([_sentence.iloc[numeral_index]['form'],
-                                                           'NUM',
-                                                           ancestor_row['head']])
-                _sentence.drop(index=numeral_index + 1, inplace=True)
-                _sentence.loc[_sentence['head'] > numeral_index, 'head'] -= 1
-                _sentence.reset_index(drop=True, inplace=True)
+
         _sentence = _inner_group_nums(_sentence)
         return _sentence
 
