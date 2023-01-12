@@ -92,8 +92,11 @@ def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
     numerical value of what this string would be read as by a human
     """
     # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
+
     # TODO: CAVEAT: for something like ['fifty' 'five'], this will yield 250 instead of 55. let's hope we don't have
     #  this in the dataset
+    # TODO: check again how this handles ['3.14' 'million'].
+    #  should return 3 140 000 000 but might yield 3 140 000 000.0!!!!! :(((((((((((
     # therefore we initialize with the neutral element of multiplication
     value = 1
 
