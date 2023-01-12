@@ -76,69 +76,7 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
     return proper_digits, trailing_zeroes
 
 
-def group_nums(cell: dict) -> Union[dict, str]:
-    # TODO: test this more!
-    # TODO: (maybe)
-    #  instead of ['roughly', ['7', 'hundred', 'million']]
-    #  return ['roughly', ('numgroup', ['7', 'hundred', 'million'])]
-    #  and for cconj: ['between', ('cconj', ['7', 'and', '8'])]
-    #  and for '-' or 'to': ['from', ('range', ['7', 'to', '8'])]
-    """
 
-    Parameters
-    ----------
-    cell: sentence df as dict
-
-    Returns
-    -------
-    cell with consecutive numerals that modify each other merged into on list of strings
-    (which can then be interpreted with parse_num_group())
-
-    if non-consecutive numerals modify each other: "needs manual inspection"
-    """
-    sentence = pd.DataFrame(cell)
-    sentence.loc[sentence['upos'] == 'NUM', 'form'] = sentence.loc[sentence['upos'] == 'NUM', 'form'].map(lambda x: [x])
-
-    def _inner_group_nums(_sentence: pd.DataFrame) -> Union[pd.DataFrame, str]:
-        numerals_df = _sentence.loc[_sentence['upos'] == 'NUM']
-
-        # if no numbers modify each other, nothing needs to be done
-        if (set(numerals_df.index) & set(numerals_df['head'])) == set():
-            return _sentence
-
-        # in all other cases, go into recursion:
-        for numeral_index in numerals_df.index:
-            if _sentence.iloc[numeral_index]['head'] in numerals_df.index:
-                ancestor_row = concordance_ancestors(_sentence, numeral_index).iloc[0]
-
-                # in most cases, two numerals referring to each other are actually part of the same number
-                # e.g. "200 thousand" = 200 000
-                # if this is the case, concatenate to one number and adjust the rest of the dataframe
-                if ancestor_row.name == numeral_index + 1:
-                    _sentence.iloc[numeral_index]['form'].extend(ancestor_row['form'])
-                    _sentence.iloc[numeral_index] = pd.Series([_sentence.iloc[numeral_index]['form'],
-                                                               'NUM',
-                                                               ancestor_row['head']])
-                    _sentence.drop(index=numeral_index + 1, inplace=True)
-                    _sentence.loc[_sentence['head'] > numeral_index, 'head'] -= 1
-                    _sentence.reset_index(drop=True, inplace=True)
-
-                # sometimes, one number refers to another but there is an "and", "or", "to", "-" between the two
-                # in this case, make both numbers refer to the conjunction instead
-                elif ancestor_row.name == numeral_index + 2 \
-                        and \
-                        _sentence.iloc[numeral_index + 1]['upos'] in {'CCONJ', 'ADP', 'SYM'}:
-                    return "needs manual inspection" # TODO: make NUMs refer to the conjunction to disentangle
-                else:
-                    return "needs manual inspection"
-
-        _sentence = _inner_group_nums(_sentence)
-        return _sentence
-
-    try:
-        return _inner_group_nums(sentence).to_dict('list')
-    except AttributeError:
-        return "needs manual inspection"
 
 
 def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
@@ -160,14 +98,21 @@ def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
     value = 1
 
     for num in num_group:
+
+        # simplify '50,000' to '50000'
+        num = num.replace(',', '')
+
+        # we assume that a '.' is a decimal point and therefore needs to be handled as a float
         if '.' in num:
             try:
                 num_value = float(num)
             except ValueError:
                 return "needs manual inspection"
         else:
+
+            # try to naturally convert the string to an integer (maybe need to remove spaces first)
             try:
-                num_value = int(num)
+                num_value = int(num.replace(' ', ''))
             except ValueError:
                 try:
                     num_value = w2n.word_to_num(num)
