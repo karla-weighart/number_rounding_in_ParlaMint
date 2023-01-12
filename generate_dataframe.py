@@ -115,7 +115,7 @@ def sentences_and_meta_df(file_path: str,
 
     # === combining sentence data and meta data ===
 
-    # only load columns that contain valuable information (I used understanding_the_corpus to identify those columns)
+    # only load columns that contain valuable information
     meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
