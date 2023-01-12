@@ -76,7 +76,83 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
     return proper_digits, trailing_zeroes
 
 
+def group_nums(cell: dict) -> Union[dict, str]:
+    """
 
+    Parameters
+    ----------
+    cell: sentence df as dict
+
+    Returns
+    -------
+    cell with
+    - consecutive numerals that modify each other merged into on list of strings
+      (which can then be interpreted with parse_num_group())
+    - 'three' 'to' 'four' and similar get restructured so the numerals both have the connector as their new heads
+      and the connector has whatever the head of one of the number was as its new head
+
+    in other cases: error message AS STRING (so it doesn't stop the running program)
+    """
+
+    sentence = pd.DataFrame(cell)
+    sentence.loc[sentence['upos'] == 'NUM', 'form'] =\
+        sentence.loc[sentence['upos'] == 'NUM', 'form'].map(lambda x: [x])
+
+    def _inner_group_nums(_sentence: pd.DataFrame) -> Union[pd.DataFrame, str]:
+
+        numerals_df = _sentence.loc[_sentence['upos'] == 'NUM']
+
+        # if no numbers refer to each other, nothing needs to be done anymore
+        if (set(numerals_df.index) & set(numerals_df['head'])) == set():
+            return _sentence
+
+        # else (implicit else via return statement): resolve all cases where one numeral refers to another
+        # start with the first numeral that is not the head of another numeral but has a numeral as its head
+        # in other words: one that is a leaf of a tree of numerals
+        numeral_index = [index for index in numerals_df.index
+                         if index not in set(numerals_df['head'])
+                         and _sentence.loc[index, 'head'] in numerals_df.index
+                         ][0]
+
+        ancestor_row = concordance_ancestors(_sentence, numeral_index).iloc[0]
+        ancestor_index = ancestor_row.name
+
+        # in most cases, two numerals referring to each other are actually part of the same number
+        # e.g. "200 thousand" = 200 000
+        # if this is the case, concatenate to one number and adjust the rest of the dataframe
+        if ancestor_index == numeral_index + 1:
+            _sentence.loc[numeral_index, 'form'].extend(ancestor_row['form'])
+            _sentence.loc[numeral_index, 'head'] = ancestor_row['head']
+            _sentence.drop(index=(numeral_index + 1), inplace=True)
+            _sentence.loc[_sentence['head'] > numeral_index, 'head'] -= 1
+            _sentence.reset_index(drop=True, inplace=True)
+
+        # sometimes, one number refers to another but there is an "and", "or", "to", "-" between the two
+        # this might happen either with the other number 2 ahead or 2 behind
+        # in these cases, make the conjunction the parent of both numbers
+        # the conjunction then gets the parent that one of the numbers initially had
+        elif abs(ancestor_index - numeral_index) == 2:
+            connector_index = (numeral_index + ancestor_index) // 2
+
+            if _sentence.loc[connector_index, 'upos'] in {'CCONJ', 'ADP', 'SYM', 'PUNCT'}:
+
+                indexes = {numeral_index, ancestor_index, connector_index}
+                parent_indexes = {_sentence.loc[index, 'head'] for index in indexes}
+                super_parent_index = list(parent_indexes - indexes)[0]
+                _sentence.loc[connector_index, 'head'] = super_parent_index
+
+                for num_index in {numeral_index, ancestor_index}:
+                    _sentence.loc[num_index, 'head'] = connector_index
+
+        else:
+            raise AttributeError(f"needs manual inspection at line {numeral_index}")
+
+        return _inner_group_nums(_sentence)
+
+    try:
+        return _inner_group_nums(sentence).to_dict('list')
+    except AttributeError as e:
+        return str(e)
 
 
 def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
