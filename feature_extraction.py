@@ -155,7 +155,7 @@ def group_nums(cell: dict) -> Union[dict, str]:
         return str(e)
 
 
-def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
+def parse_num_group(num_group: list[str, ...]) -> str:
     """
 
     Parameters
@@ -171,8 +171,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
 
     # TODO: CAVEAT: for something like ['fifty' 'five'], this will yield 250 instead of 55. let's hope we don't have
     #  this in the dataset
-    # TODO: check again how this handles ['3.14' 'million'].
-    #  should return 3 140 000 000 but might yield 3 140 000 000.0!!!!! :(((((((((((
+
     # therefore we initialize with the neutral element of multiplication
     value = 1
 
@@ -198,4 +197,11 @@ def parse_num_group(num_group: list[str, ...]) -> Union[float, int, str]:
                 except ValueError:
                     return "needs manual inspection"
         value *= num_value
-    return value
+
+    # if the for loop terminated normally, use the last num that was evaluated (which persists from the for-loop)
+    # to determine whether the result should be represented as float or int
+    else:
+        if type(num_value) == int and int(value) == value:
+            value = int(value)
+
+    return str(value)
