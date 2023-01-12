@@ -205,3 +205,17 @@ def parse_num_group(num_group: list[str, ...]) -> str:
             value = int(value)
 
     return str(value)
+
+
+def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
+
+    # some cells cannot be parsed by group_nums and therefore contain a string with an error message
+    if type(cell_with_grouped_nums) == str:
+        return "needs manual inspection"
+
+    # implicit else by return
+    sentence = pd.DataFrame(cell_with_grouped_nums)
+
+    sentence.loc[sentence['upos'] == 'NUM', 'form'] = sentence[sentence['upos'] == 'NUM']['form'].map(parse_num_group)
+
+    return sentence.to_dict('list')
