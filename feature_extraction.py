@@ -134,7 +134,8 @@ def group_nums(cell: dict) -> Union[dict, str]:
         elif abs(ancestor_index - numeral_index) == 2:
             connector_index = (numeral_index + ancestor_index) // 2
 
-            if _sentence.loc[connector_index, 'upos'] in {'CCONJ', 'ADP', 'SYM', 'PUNCT'}:
+            if _sentence.loc[connector_index, 'form'] in {'to', '-'} \
+                    or _sentence.loc[connector_index, 'upos'] is 'CCONJ':
 
                 indexes = {numeral_index, ancestor_index, connector_index}
                 parent_indexes = {_sentence.loc[index, 'head'] for index in indexes}
@@ -143,6 +144,8 @@ def group_nums(cell: dict) -> Union[dict, str]:
 
                 for num_index in {numeral_index, ancestor_index}:
                     _sentence.loc[num_index, 'head'] = connector_index
+            else:
+                raise AttributeError(f"needs manual inspection at line {numeral_index}")
 
         else:
             raise AttributeError(f"needs manual inspection at line {numeral_index}")
