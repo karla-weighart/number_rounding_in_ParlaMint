@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from word2number import w2n
 
@@ -171,11 +172,7 @@ def parse_num_group(num_group: list[str, ...]) -> str:
     numerical value of what this string would be read as by a human
     """
     # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
-
-    # TODO: CAVEAT: for something like ['fifty' 'five'], this will yield 250 instead of 55. let's hope we don't have
-    #  this in the dataset
-
-    # therefore we initialize with the neutral element of multiplication
+    # therefore initialize with the neutral element of multiplication (for exceptions see the else-clause of for-loop)
     value = 1
 
     for num in num_group:
@@ -201,11 +198,18 @@ def parse_num_group(num_group: list[str, ...]) -> str:
                     return "needs manual inspection"
         value *= num_value
 
-    # if the for loop terminated normally, use the last num that was evaluated (which persists from the for-loop)
-    # to determine whether the result should be represented as float or int
+    # if the for loop terminated normally:
     else:
+
+        # use the last num that was evaluated (which persists from the for-loop)
+        # to determine whether the result should be represented as float or int
         if type(num_value) == int and int(value) == value:
             value = int(value)
+
+        # for something like ['fifty' 'five'], the above will yield 250 instead of 55
+        # -> do not return the value! "needs manual inspection" instead
+        if len(num_group) > 1 and np.log10(num_value) != int(np.log10(num_value)):
+            return "needs manual inspection"
 
     return str(value)
 
