@@ -1,5 +1,6 @@
 import conllu
 import pandas as pd
+import swifter
 
 from glob import glob
 from tqdm.notebook import tqdm
@@ -47,7 +48,7 @@ def sentences_and_meta_df(file_path: str,
                           remove_ghosts: bool = True,
                           min_sentence_length: int = 3,
                           remove_enum: bool = True,
-                          only_with_nums: bool = True)\
+                          only_with_nums: bool = True) \
         -> pd.DataFrame:
     """
 
@@ -98,20 +99,20 @@ def sentences_and_meta_df(file_path: str,
     # make them inherit the utterance_id of their predecessor with ffill
     sentences_df['utterance_id'] = sentences_df['utterance_id'].ffill()
 
-
     # === data cleaning ===
 
     # remove short sentences
-    sentences_df = sentences_df[sentences_df['sentence'].map(count_words) >= min_sentence_length]
+    sentences_df = sentences_df[sentences_df['sentence']. \
+                                    swifter.progress_bar(False).apply(count_words) >= min_sentence_length]
 
     # remove sentences of the form "2."
     if remove_enum and min_sentence_length < 3:
-        sentences_df = sentences_df[sentences_df['sentence'].map(lambda cell: not is_enum(pd.DataFrame(cell)))]
+        sentences_df = sentences_df[sentences_df['sentence']. \
+            swifter.progress_bar(False).apply(lambda cell: not is_enum(cell))]
 
     # remove sentences that do not contain any numbers
     if only_with_nums:
-        sentences_df = sentences_df[sentences_df['sentence'].map(contains_num)]
-
+        sentences_df = sentences_df[sentences_df['sentence'].swifter.progress_bar(False).apply(contains_num)]
 
     # === combining sentence data and meta data ===
 
@@ -122,7 +123,6 @@ def sentences_and_meta_df(file_path: str,
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
 
     sentences_df = sentences_df.merge(meta_df)
-
 
     # === data efficiency ===
 
@@ -167,11 +167,16 @@ def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = No
         path_list = make_conllu_files_list()
     else:
         path_list = make_conllu_files_list()[:number_of_files]
+
     multiple_file_df = pd.concat(tqdm((sentences_and_meta_df(
-            path,
-            remove_ghosts=remove_ghosts,
-            min_sentence_length=min_sentence_length,
-            remove_enum=remove_enum,
-            only_with_nums=only_with_nums
-        ) for path in path_list), total=len(path_list)))
+        path,
+        remove_ghosts=remove_ghosts,
+        min_sentence_length=min_sentence_length,
+        remove_enum=remove_enum,
+        only_with_nums=only_with_nums
+    ) for path in path_list), total=len(path_list)))
+
+    # reset index so we can use swifter
+    multiple_file_df = multiple_file_df.reset_index(drop=True)
+
     return multiple_file_df
