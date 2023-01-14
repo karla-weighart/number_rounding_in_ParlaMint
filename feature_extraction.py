@@ -205,15 +205,15 @@ def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
     # if the for loop terminated normally:
     else:
 
-        # use the last num that was evaluated (which persists from the for-loop)
-        # to determine whether the result should be represented as float or int
-        if type(num_value) == int and int(value) == value:
-            value = int(value)
-
         # for something like ['fifty' 'five'], the above will yield 250 instead of 55
         # -> do not return the value! "needs manual inspection" instead
         if len(num_group) > 1 and np.log10(num_value) != int(np.log10(num_value)):
             return "needs manual inspection"
+
+        # use the last num that was evaluated (which persists from the for-loop)
+        # to determine whether the result should be represented as float or int
+        if type(num_value) == int and int(value) == value:
+            value = int(value)
 
     return value
 
