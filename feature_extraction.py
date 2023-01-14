@@ -55,7 +55,7 @@ def concordance_ancestors(cell: pd.DataFrame, start_index: int, depth: int = 1):
     # TODO: add column for depth_level
 
 
-def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
+def find_roundedness(num: Union[int, float, str]) -> Union[tuple[int, int], str]:
     """
 
     Parameters
@@ -71,6 +71,10 @@ def find_roundedness(num: Union[int, float]) -> tuple[int, int]:
     number of trailing zeroes
     (in example: 4, because '000.0' are trailing zeroes)
     """
+    # some cells already are "needs manual inspection". propagate that
+    if type(num) == str and "manual inspection" in num:
+        return "needs manual inspection"
+
     num_str = str(num).lstrip('0').replace('.', '')
     proper_digits = len(num_str.rstrip('0'))
     trailing_zeroes = len(num_str) - proper_digits
@@ -159,7 +163,7 @@ def group_nums(cell: dict) -> Union[dict, str]:
         return str(e)
 
 
-def parse_num_group(num_group: list[str, ...]) -> str:
+def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
     """
 
     Parameters
@@ -211,13 +215,13 @@ def parse_num_group(num_group: list[str, ...]) -> str:
         if len(num_group) > 1 and np.log10(num_value) != int(np.log10(num_value)):
             return "needs manual inspection"
 
-    return str(value)
+    return value
 
 
 def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
 
-    # some cells cannot be parsed by group_nums and therefore contain a string with an error message
-    if type(cell_with_grouped_nums) == str:
+    # some cells already are "needs manual inspection". propagate that
+    if type(cell_with_grouped_nums) == str and "manual inspection" in cell_with_grouped_nums:
         return "needs manual inspection"
 
     # implicit else by return
