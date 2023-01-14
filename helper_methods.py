@@ -60,7 +60,9 @@ def num_list(cell: dict) -> Union[list, str]:
     list of the forms of all 'NUM's in that sentence (which might already have been grouped + parsed before)
     """
 
+    # some cells already are "needs manual inspection". propagate that
     if type(cell) == str:
         return "needs manual inspection"
+
     sentence = pd.DataFrame(cell)
     return list(sentence[sentence['upos'] == 'NUM']['form'])
