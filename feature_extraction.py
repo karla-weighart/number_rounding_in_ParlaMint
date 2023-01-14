@@ -55,13 +55,13 @@ def concordance_ancestors(cell: pd.DataFrame, start_index: int, depth: int = 1):
     # TODO: add column for depth_level
 
 
-def find_roundedness(num: Union[int, float, str]) -> Union[tuple[int, int], str]:
+def find_roundedness(num: Union[tuple[int, Union[int, float]], str]) -> Union[tuple[int, int], str]:
     """
 
     Parameters
     ----------
-    num: number to be investigated
-    (example: 304000.0)
+    num: (index of number to be investigated, number itself)
+    (example: (7, 304000.0))
 
     Returns
     -------
@@ -75,7 +75,8 @@ def find_roundedness(num: Union[int, float, str]) -> Union[tuple[int, int], str]
     if type(num) == str and "manual inspection" in num:
         return "needs manual inspection"
 
-    num_str = str(num).lstrip('0').replace('.', '')
+    # access number part of tuple, remove preceding zeroes, remove decimal point
+    num_str = str(num[1]).lstrip('0').replace('.', '')
     proper_digits = len(num_str.rstrip('0'))
     trailing_zeroes = len(num_str) - proper_digits
     return proper_digits, trailing_zeroes

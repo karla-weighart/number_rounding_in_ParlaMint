@@ -65,4 +65,4 @@ def num_list(cell: dict) -> Union[list, str]:
         return "needs manual inspection"
 
     sentence = pd.DataFrame(cell)
-    return list(sentence[sentence['upos'] == 'NUM']['form'])
+    return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
