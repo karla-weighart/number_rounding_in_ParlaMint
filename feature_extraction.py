@@ -140,7 +140,7 @@ def group_nums(cell: dict) -> Union[dict, str]:
             connector_index = (numeral_index + ancestor_index) // 2
 
             if _sentence.loc[connector_index, 'form'] in {'to', '-'} \
-                    or _sentence.loc[connector_index, 'upos'] is 'CCONJ':
+                    or _sentence.loc[connector_index, 'upos'] == 'CCONJ':
 
                 indexes = {numeral_index, ancestor_index, connector_index}
                 parent_indexes = {_sentence.loc[index, 'head'] for index in indexes}
