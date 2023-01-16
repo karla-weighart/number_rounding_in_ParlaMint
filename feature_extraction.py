@@ -262,11 +262,18 @@ def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
 
     # if the for loop terminated normally:
     else:
+        if num_value < 0:
+            return "needs manual inspection (contains negative number)"
+
+        # for something like ['500' '000'], the above will yield 0 instead of 500000
+        # -> do not return the value! "needs manual inspection" instead
+        if num_value == 0 and len(num_group) > 1:
+            return "needs manual inspection (false zero)"
 
         # for something like ['fifty' 'five'], the above will yield 250 instead of 55
         # -> do not return the value! "needs manual inspection" instead
-        if len(num_group) > 1 and np.log10(num_value) != int(np.log10(num_value)):
-            return "needs manual inspection"
+        if len(num_group) > 1 and num_value > 0 and np.log10(num_value) != int(np.log10(num_value)):
+            return "needs manual inspection (['fifty', 'five'] case)"
 
         # use the last num that was evaluated (which persists from the for-loop)
         # to determine whether the result should be represented as float or int
