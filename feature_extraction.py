@@ -258,10 +258,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
                     num_value = w2n.word_to_num(num)
                 except ValueError:
                     return "needs manual inspection"
-        value *= num_value
 
-    # if the for loop terminated normally:
-    else:
         if num_value < 0:
             return "needs manual inspection (contains negative number)"
 
@@ -270,6 +267,10 @@ def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
         if num_value == 0 and len(num_group) > 1:
             return "needs manual inspection (false zero)"
 
+        value *= num_value
+
+    # if the for loop terminated normally:
+    else:
         # for something like ['fifty' 'five'], the above will yield 250 instead of 55
         # -> do not return the value! "needs manual inspection" instead
         if len(num_group) > 1 and num_value > 0 and np.log10(num_value) != int(np.log10(num_value)):
