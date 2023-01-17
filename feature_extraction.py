@@ -204,7 +204,8 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
 
     Returns
     -------
-    numerical value of what this string would be read as by a human
+    numerical value of what this string would be read as by a human as str
+    float representation (which would not suffice on its own because float(4.000) = float(4))
     """
 
     num_0 = num_group[0]
@@ -257,6 +258,16 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
 
 
 def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
+    """
+
+    Parameters
+    ----------
+    cell_with_grouped_nums: output of group_nums() (sentence df as dict)
+
+    Returns
+    -------
+    applies parse_num_group to each NUM in cell, returns sentence df as dict
+    """
 
     # some cells already are "needs manual inspection". propagate that
     if type(cell_with_grouped_nums) == str and "manual inspection" in cell_with_grouped_nums:
@@ -270,8 +281,7 @@ def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, st
     return sentence.to_dict('list')
 
 
-def find_roundedness(num: Union[tuple[float, str], str]) -> Union[tuple[str, int, int], str]:
-    # TODO: make find_roundedness take strings only!
+def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int, int], str]:
     """
 
     Parameters
@@ -281,6 +291,14 @@ def find_roundedness(num: Union[tuple[float, str], str]) -> Union[tuple[str, int
 
     Returns
     -------
+    tuple containing:
+    str: 'float-like' or 'int-like': whether the given number contains a decimal point and is therefore float-like or not
+    for float-likes:
+        number of digits before decimal point
+        number of digits after decimal point
+    for int-likes:
+        number of proper digits
+        number of trailing zeroes
     number of 'proper' digits, i.e. everything that is not a trailing zero
     (in example: 3, because '304' are proper digits)
 
@@ -291,8 +309,13 @@ def find_roundedness(num: Union[tuple[float, str], str]) -> Union[tuple[str, int
     if type(num) == str and "manual inspection" in num:
         return "needs manual inspection"
 
-    # access number part of tuple, remove preceding zeroes, remove decimal point
-    num_str = str(num[1]).lstrip('0').replace('.', '')
+    # access number part of input tuple with num[0]
+    if '.' in num[0]:
+        number_of_digits_before_decimal_point = num[0].find('.')
+        number_of_digits_after_decimal_point = len(num[0]) - num[0].find('.') - 1
+        return 'float-like', number_of_digits_before_decimal_point, number_of_digits_after_decimal_point
+
+    num_str = num[0].lstrip('0').replace('.', '')
     proper_digits = len(num_str.rstrip('0'))
     trailing_zeroes = len(num_str) - proper_digits
-    return proper_digits, trailing_zeroes
+    return 'int-like', proper_digits, trailing_zeroes
