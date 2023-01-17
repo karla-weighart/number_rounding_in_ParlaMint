@@ -226,7 +226,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
         except ValueError:
             try:
                 value = w2n.word_to_num(num_0)
-                num_0_value = value
+                num_0_value = str(value)
             except ValueError:
                 return "needs manual inspection"
 
@@ -253,8 +253,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
     # convert to int in case num_0 was float and multiplication therefore made everything a float
     if value != int(value):
         return "needs manual inspection (float/int problem)"
-    else:
-        return str(int(value)), value
+    return str(int(value)), value
 
 
 def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
@@ -281,13 +280,33 @@ def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, st
     return sentence.to_dict('list')
 
 
+def num_list(cell: dict) -> Union[list[tuple[int, tuple[str, int]]], str]:
+    """
+
+    Parameters
+    ----------
+    cell: sentence df as dict
+
+    Returns
+    -------
+    list of the forms of all 'NUM's in that sentence (which might already have been grouped + parsed before)
+    """
+
+    # some cells already are "needs manual inspection". propagate that
+    if type(cell) == str:
+        return "needs manual inspection"
+
+    sentence = pd.DataFrame(cell)
+    return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
+
+
 def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int, int], str]:
     """
 
     Parameters
     ----------
-    num: (index of number to be investigated, number itself)
-    (example: (7, 304000.0))
+    num: tuple(index of number to be investigated, tuple(number as string, number as float))
+    (example: (7, (304000.00, 304000.0))
 
     Returns
     -------
@@ -309,13 +328,14 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
     if type(num) == str and "manual inspection" in num:
         return "needs manual inspection"
 
-    # access number part of input tuple with num[0]
-    if '.' in num[0]:
-        number_of_digits_before_decimal_point = num[0].find('.')
-        number_of_digits_after_decimal_point = len(num[0]) - num[0].find('.') - 1
+    num_as_str = num[1][0]
+    return type(num_as_str)
+
+    if '.' in num_as_str:
+        number_of_digits_before_decimal_point = num_as_str.find('.')
+        number_of_digits_after_decimal_point = len(num_as_str) - num_as_str.find('.') - 1
         return 'float-like', number_of_digits_before_decimal_point, number_of_digits_after_decimal_point
 
-    num_str = num[0].lstrip('0').replace('.', '')
-    proper_digits = len(num_str.rstrip('0'))
-    trailing_zeroes = len(num_str) - proper_digits
+    proper_digits = len(num_as_str.rstrip('0'))
+    trailing_zeroes = len(num_as_str) - proper_digits
     return 'int-like', proper_digits, trailing_zeroes

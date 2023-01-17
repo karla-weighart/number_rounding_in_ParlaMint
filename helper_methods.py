@@ -48,21 +48,3 @@ def contains_num(cell: dict) -> bool:
     return contains_numeral  # or contains_digit
 
 
-def num_list(cell: dict) -> Union[list, str]:
-    """
-
-    Parameters
-    ----------
-    cell: sentence df as dict
-
-    Returns
-    -------
-    list of the forms of all 'NUM's in that sentence (which might already have been grouped + parsed before)
-    """
-
-    # some cells already are "needs manual inspection". propagate that
-    if type(cell) == str:
-        return "needs manual inspection"
-
-    sentence = pd.DataFrame(cell)
-    return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
