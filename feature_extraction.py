@@ -112,34 +112,6 @@ def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> Union[dict, 
         .to_dict('list')
 
 
-def find_roundedness(num: Union[tuple[int, Union[int, float]], str]) -> Union[tuple[int, int], str]:
-    # TODO: make find_roundedness take strings only!
-    """
-
-    Parameters
-    ----------
-    num: (index of number to be investigated, number itself)
-    (example: (7, 304000.0))
-
-    Returns
-    -------
-    number of 'proper' digits, i.e. everything that is not a trailing zero
-    (in example: 3, because '304' are proper digits)
-
-    number of trailing zeroes
-    (in example: 4, because '000.0' are trailing zeroes)
-    """
-    # some cells already are "needs manual inspection". propagate that
-    if type(num) == str and "manual inspection" in num:
-        return "needs manual inspection"
-
-    # access number part of tuple, remove preceding zeroes, remove decimal point
-    num_str = str(num[1]).lstrip('0').replace('.', '')
-    proper_digits = len(num_str.rstrip('0'))
-    trailing_zeroes = len(num_str) - proper_digits
-    return proper_digits, trailing_zeroes
-
-
 def group_nums(cell: dict) -> Union[dict, str]:
     """
 
@@ -171,7 +143,7 @@ def group_nums(cell: dict) -> Union[dict, str]:
             return _sentence
 
         # else (implicit else via return statement): resolve all cases where one numeral refers to another
-        # start with the first numeral that is not the head of another numeral but has a numeral as its head
+        # start with the first numeral that is not the head of another numeral but has a numeral as its head (=ancestor)
         # in other words: one that is a leaf of a tree of numerals
         numeral_index = [index for index in numerals_df.index
                          if index not in set(numerals_df['head'])
@@ -222,7 +194,7 @@ def group_nums(cell: dict) -> Union[dict, str]:
         return str(e)
 
 
-def parse_num_group(num_group: list[str, ...]) -> str:
+def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
     """
 
     Parameters
@@ -258,7 +230,7 @@ def parse_num_group(num_group: list[str, ...]) -> str:
                 return "needs manual inspection"
 
     if len(num_group) == 1:
-        return num_0_value
+        return num_0_value, value
 
     # implicit else: only reached if len(num_group) > 1
     # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
@@ -281,7 +253,7 @@ def parse_num_group(num_group: list[str, ...]) -> str:
     if value != int(value):
         return "needs manual inspection (float/int problem)"
     else:
-        return str(int(value))
+        return str(int(value)), value
 
 
 def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
@@ -296,3 +268,31 @@ def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, st
     sentence.loc[sentence['upos'] == 'NUM', 'form'] = sentence[sentence['upos'] == 'NUM']['form'].map(parse_num_group)
 
     return sentence.to_dict('list')
+
+
+def find_roundedness(num: Union[tuple[float, str], str]) -> Union[tuple[str, int, int], str]:
+    # TODO: make find_roundedness take strings only!
+    """
+
+    Parameters
+    ----------
+    num: (index of number to be investigated, number itself)
+    (example: (7, 304000.0))
+
+    Returns
+    -------
+    number of 'proper' digits, i.e. everything that is not a trailing zero
+    (in example: 3, because '304' are proper digits)
+
+    number of trailing zeroes
+    (in example: 4, because '000.0' are trailing zeroes)
+    """
+    # some cells already are "needs manual inspection". propagate that
+    if type(num) == str and "manual inspection" in num:
+        return "needs manual inspection"
+
+    # access number part of tuple, remove preceding zeroes, remove decimal point
+    num_str = str(num[1]).lstrip('0').replace('.', '')
+    proper_digits = len(num_str.rstrip('0'))
+    trailing_zeroes = len(num_str) - proper_digits
+    return proper_digits, trailing_zeroes
