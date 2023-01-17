@@ -113,6 +113,7 @@ def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> Union[dict, 
 
 
 def find_roundedness(num: Union[tuple[int, Union[int, float]], str]) -> Union[tuple[int, int], str]:
+    # TODO: make find_roundedness take strings only!
     """
 
     Parameters
@@ -221,7 +222,7 @@ def group_nums(cell: dict) -> Union[dict, str]:
         return str(e)
 
 
-def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
+def parse_num_group(num_group: list[str, ...]) -> str:
     """
 
     Parameters
@@ -233,55 +234,54 @@ def parse_num_group(num_group: list[str, ...]) -> Union[int, str]:
     -------
     numerical value of what this string would be read as by a human
     """
-    # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
-    # therefore initialize with the neutral element of multiplication (for exceptions see the else-clause of for-loop)
-    value = 1
 
-    for num in num_group:
+    num_0 = num_group[0]
 
-        # simplify '50,000' to '50000'
-        num = num.replace(',', '')
-
-        # we assume that a '.' is a decimal point and therefore needs to be handled as a float
-        if '.' in num:
+    # we assume that a '.' is a decimal point and therefore needs to be handled as a float
+    if '.' in num_0:
+        try:
+            # simplify '50,000' or '50 000' to '50000' with replace()
+            value = float(num_0.replace(',', '').replace(' ', ''))
+            num_0_value = num_0
+        except ValueError:
+            return "needs manual inspection"
+    else:
+        try:
+            # simplify '50,000' or '50 000' to '50000' with replace()
+            value = int(num_0.replace(',', '').replace(' ', ''))
+            num_0_value = str(value)
+        except ValueError:
             try:
-                num_value = float(num)
+                value = w2n.word_to_num(num_0)
+                num_0_value = value
             except ValueError:
                 return "needs manual inspection"
-        else:
 
-            # try to naturally convert the string to an integer (maybe need to remove spaces first)
-            try:
-                num_value = int(num.replace(' ', ''))
-            except ValueError:
-                try:
-                    num_value = w2n.word_to_num(num)
-                except ValueError:
-                    return "needs manual inspection"
+    if len(num_group) == 1:
+        return num_0_value
 
-        if num_value < 0:
+    # implicit else: only reached if len(num_group) > 1
+    # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
+    # (for exceptions see the else-clause of for-loop)
+    for num in num_group[1:]:
+        try:
+            num_value = w2n.word_to_num(num)
+        except ValueError as e:
+            return f"needs manual inspection (w2n: {e})"
+
+        if num_value <= 0:
             return "needs manual inspection (contains negative number)"
 
-        # for something like ['500' '000'], the above will yield 0 instead of 500000
-        # -> do not return the value! "needs manual inspection" instead
-        if num_value == 0 and len(num_group) > 1:
-            return "needs manual inspection (false zero)"
+        elif np.log10(num_value) != int(np.log10(num_value)):
+            return "needs manual inspection (not power of ten!)"
 
         value *= num_value
 
-    # if the for loop terminated normally:
+    # convert to int in case num_0 was float and multiplication therefore made everything a float
+    if value != int(value):
+        return "needs manual inspection (float/int problem)"
     else:
-        # for something like ['fifty' 'five'], the above will yield 250 instead of 55
-        # -> do not return the value! "needs manual inspection" instead
-        if len(num_group) > 1 and num_value > 0 and np.log10(num_value) != int(np.log10(num_value)):
-            return "needs manual inspection (['fifty', 'five'] case)"
-
-        # use the last num that was evaluated (which persists from the for-loop)
-        # to determine whether the result should be represented as float or int
-        if type(num_value) == int and int(value) == value:
-            value = int(value)
-
-    return value
+        return str(int(value))
 
 
 def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
