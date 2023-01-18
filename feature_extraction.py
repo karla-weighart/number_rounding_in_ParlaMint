@@ -313,8 +313,8 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
     tuple containing:
     str: 'float-like' or 'int-like': whether the given number contains a decimal point and is therefore float-like or not
     for float-likes:
-        number of digits before decimal point
-        number of digits after decimal point
+        number of leading zeroes
+        number of proper digits
     for int-likes:
         number of proper digits
         number of trailing zeroes
@@ -329,12 +329,17 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
         return "needs manual inspection"
 
     num_as_str = num[1][0]
-    return type(num_as_str)
 
     if '.' in num_as_str:
-        number_of_digits_before_decimal_point = num_as_str.find('.')
-        number_of_digits_after_decimal_point = len(num_as_str) - num_as_str.find('.') - 1
-        return 'float-like', number_of_digits_before_decimal_point, number_of_digits_after_decimal_point
+        # remove decimal point
+        num_as_str = num_as_str.replace('.', '')
+
+        proper_digits = len(num_as_str.lstrip('0'))
+        leading_zeroes = len(num_as_str) - proper_digits
+        return 'float-like', leading_zeroes, proper_digits
+
+    if num_as_str[0] == '0':
+        return "needs manual inspection (leading zero)"
 
     proper_digits = len(num_as_str.rstrip('0'))
     trailing_zeroes = len(num_as_str) - proper_digits
