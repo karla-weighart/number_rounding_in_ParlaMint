@@ -112,6 +112,29 @@ def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> Union[dict, 
         .to_dict('list')
 
 
+def ancestry_set(cell: Union[dict, str]) -> Union[set, str]:
+    """
+
+    Parameters
+    ----------
+    cell: cell containing result from concordance_descendants_on_row or concordance_ancestors_on_row
+
+    Returns
+    -------
+    propagates "needs manual inspection" / "no descendants"
+    yields set of all descendants/ancestors
+    """
+
+    if type(cell) == str:
+        if "manual inspection" in cell:
+            return "needs manual inspection (propagated)"
+        if "no descendants" in cell:
+            return "no descandants"
+        return "needs manual inspection (ancestry list forbidden case)"
+
+    return set(cell['form'])
+
+
 def group_nums(cell: dict) -> Union[dict, str]:
     """
 
