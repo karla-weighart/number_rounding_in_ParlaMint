@@ -9,4 +9,6 @@ def load_saved_df(path: str):
     for column in LIT_EVAL_RESULT_COLUMNS:
         try:
             saved_df[column] = saved_df[column].swifter.apply(literal_eval)
+        except Exception as e:
+            print(e)
     return saved_df
