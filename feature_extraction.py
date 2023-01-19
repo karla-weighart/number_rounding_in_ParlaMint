@@ -51,7 +51,7 @@ def concordance_descendants_on_row(row: pd.Series, depth: int = 1) -> Union[dict
     sentence = row['sentence_parsed_num_groups']
 
     if type(sentence) == str:
-        return "needs manual inspection"
+        return "needs manual inspection (propagated)"
 
     descendants_df = \
         concordance_descendants(pd.DataFrame(row['sentence_parsed_num_groups']), row['NUMs'][0], depth=depth)
@@ -106,7 +106,7 @@ def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> Union[dict, 
     sentence = row['sentence_parsed_num_groups']
 
     if type(sentence) == str:
-        return "needs manual inspection"
+        return "needs manual inspection (propagated)"
 
     return concordance_ancestors(pd.DataFrame(row['sentence_parsed_num_groups']), row['NUMs'][0], depth=depth)\
         .to_dict('list')
@@ -130,7 +130,6 @@ def ancestry_set(cell: Union[dict, str]) -> Union[set, str]:
             return "needs manual inspection (propagated)"
         if "no descendants" in cell:
             return "no descandants"
-        return "needs manual inspection (ancestry list forbidden case)"
 
     return set(cell['form'])
 
@@ -204,10 +203,10 @@ def group_nums(cell: dict) -> Union[dict, str]:
                 for num_index in {numeral_index, ancestor_index}:
                     _sentence.loc[num_index, 'head'] = connector_index
             else:
-                raise AttributeError(f"needs manual inspection at line {numeral_index}")
+                raise AttributeError(f"needs manual inspection (group nums failed at line {numeral_index})")
 
         else:
-            raise AttributeError(f"needs manual inspection at line {numeral_index}")
+            raise AttributeError(f"needs manual inspection (group nums failed at line {numeral_index})")
 
         return _inner_group_nums(_sentence)
 
@@ -240,7 +239,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
             value = float(num_0.replace(',', '').replace(' ', ''))
             num_0_value = num_0
         except ValueError:
-            return "needs manual inspection"
+            return f"needs manual inspection (parse_num_groups failed with num_0 float-like: {num_0})"
     else:
         try:
             # simplify '50,000' or '50 000' to '50000' with replace()
@@ -251,7 +250,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
                 value = w2n.word_to_num(num_0)
                 num_0_value = str(value)
             except ValueError:
-                return "needs manual inspection"
+                return f"needs manual inspection (parse_num_groups failed with num_0 int-like: {num_0})"
 
     if len(num_group) == 1:
         return num_0_value, value
@@ -263,19 +262,19 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
         try:
             num_value = w2n.word_to_num(num)
         except ValueError as e:
-            return f"needs manual inspection (w2n: {e})"
+            return f"needs manual inspection (parse_num_groups failed with w2n: ({num_value}, {e}))"
 
         if num_value <= 0:
-            return "needs manual inspection (contains negative number)"
+            return f"needs manual inspection (parse_num_group failed with negative number: {num_value})"
 
         elif np.log10(num_value) != int(np.log10(num_value)):
-            return "needs manual inspection (not power of ten!)"
+            return f"needs manual inspection (parse_num_group failed, not power of ten: {num_value})"
 
         value *= num_value
 
     # convert to int in case num_0 was float and multiplication therefore made everything a float
     if value != int(value):
-        return "needs manual inspection (float/int problem)"
+        return f"needs manual inspection (parse_num_group float/int problem: {value})"
     return str(int(value)), value
 
 
@@ -292,8 +291,8 @@ def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, st
     """
 
     # some cells already are "needs manual inspection". propagate that
-    if type(cell_with_grouped_nums) == str and "manual inspection" in cell_with_grouped_nums:
-        return "needs manual inspection"
+    if type(cell_with_grouped_nums) == str:
+        return "needs manual inspection (propagated)"
 
     # implicit else by return
     sentence = pd.DataFrame(cell_with_grouped_nums)
@@ -317,7 +316,7 @@ def num_list(cell: dict) -> Union[list[tuple[int, tuple[str, int]]], str]:
 
     # some cells already are "needs manual inspection". propagate that
     if type(cell) == str:
-        return "needs manual inspection"
+        return "needs manual inspection (propagated)"
 
     sentence = pd.DataFrame(cell)
     return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
@@ -349,7 +348,7 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
     """
     # some cells already are "needs manual inspection". propagate that
     if type(num) == str and "manual inspection" in num:
-        return "needs manual inspection"
+        return "needs manual inspection (propagated)"
 
     num_as_str = num[1][0]
 
@@ -362,7 +361,7 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
         return 'float-like', leading_zeroes, proper_digits
 
     if num_as_str[0] == '0':
-        return "needs manual inspection (leading zero)"
+        return f"needs manual inspection (find_roundedness found leading zero: {num})"
 
     proper_digits = len(num_as_str.rstrip('0'))
     trailing_zeroes = len(num_as_str) - proper_digits
