@@ -262,7 +262,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
         try:
             num_value = w2n.word_to_num(num)
         except ValueError as e:
-            return f"needs manual inspection (parse_num_groups failed with w2n: ({num_value}, {e}))"
+            return f"needs manual inspection (parse_num_groups failed with w2n: ({num}, {e}))"
 
         if num_value <= 0:
             return f"needs manual inspection (parse_num_group failed with negative number: {num_value})"
@@ -333,7 +333,7 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
     Returns
     -------
     tuple containing:
-    str: 'float-like' or 'int-like': whether the given number contains a decimal point and is therefore float-like or not
+    str: 'float-like' or 'int-like': whether the given number contains a decimal point and is therefore float-like
     for float-likes:
         number of leading zeroes
         number of proper digits
