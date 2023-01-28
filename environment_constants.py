@@ -17,7 +17,12 @@ SENTENCE_COLUMNS = ['form',
                     ]
 
 # result columns that should be parsed if loading from csv
-LIT_EVAL_RESULT_COLUMNS = ['sentence_grouped_nums',
+LIT_EVAL_RESULT_COLUMNS = ['sentence',
+                           'mp',
+                           'female',
+                           'upper_house',
+                           'chairperson',
+                           'sentence_grouped_nums',
                            'sentence_parsed_num_groups',
                            'NUMs',
                            'roundedness',
