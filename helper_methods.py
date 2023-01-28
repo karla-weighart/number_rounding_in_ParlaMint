@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 
-from typing import Union
+from typing import Any
 
 
 def is_enum(cell: dict) -> bool:
     sentence_df = pd.DataFrame(cell)
-    return sentence_df.shape[0] == 2 and\
+    return sentence_df.shape[0] == 2 and \
         (sentence_df['upos'].iloc[0], sentence_df['upos'].iloc[1]) in {('X', 'PUNCT'), ('NUM', 'PUNCT')}
 
 
@@ -48,3 +48,10 @@ def contains_num(cell: dict) -> bool:
     return contains_numeral  # or contains_digit
 
 
+def try_apply(function: callable, arg: Any, error_message: bool = False):
+    try:
+        return function(arg)
+    except AttributeError as e:
+        if error_message:
+            return str(e)
+        return np.nan

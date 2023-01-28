@@ -48,13 +48,10 @@ def concordance_descendants_on_row(row: pd.Series, depth: int = 1) -> Union[dict
     else: returns ancestry of the NUM of this row
 
     """
-    sentence = row['sentence_parsed_num_groups']
-
-    if type(sentence) == str:
-        return "needs manual inspection (propagated)"
+    sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
 
     descendants_df = \
-        concordance_descendants(pd.DataFrame(row['sentence_parsed_num_groups']), row['NUMs'][0], depth=depth)
+        concordance_descendants(sentence_df, row['NUMs'][0], depth=depth)
 
     if descendants_df.shape[0] == 0:
         return "no descendants"
@@ -88,7 +85,7 @@ def concordance_ancestors(cell: pd.DataFrame, start_index: int, depth: int = 1) 
     # TODO: add column for depth_level
 
 
-def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> Union[dict, str]:
+def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> dict:
     # TODO: test for depth>1
     """
 
@@ -103,13 +100,9 @@ def concordance_ancestors_on_row(row: pd.Series, depth: int = 1) -> Union[dict, 
     propagates "needs manual inspection"
     else: returns ancestry of the NUM of this row
     """
-    sentence = row['sentence_parsed_num_groups']
+    sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
 
-    if type(sentence) == str:
-        return "needs manual inspection (propagated)"
-
-    return concordance_ancestors(pd.DataFrame(row['sentence_parsed_num_groups']), row['NUMs'][0], depth=depth)\
-        .to_dict('list')
+    return concordance_ancestors(sentence_df, row['NUMs'][0], depth=depth).to_dict('list')
 
 
 def ancestry_set(cell: Union[dict, str]) -> Union[set, str]:
@@ -126,15 +119,13 @@ def ancestry_set(cell: Union[dict, str]) -> Union[set, str]:
     """
 
     if type(cell) == str:
-        if "manual inspection" in cell:
-            return "needs manual inspection (propagated)"
         if "no descendants" in cell:
             return "no descandants"
 
     return set(cell['form'])
 
 
-def group_nums(cell: dict) -> Union[dict, str]:
+def group_nums(cell: dict) -> dict:
     """
 
     Parameters
@@ -210,13 +201,10 @@ def group_nums(cell: dict) -> Union[dict, str]:
 
         return _inner_group_nums(_sentence)
 
-    try:
-        return _inner_group_nums(sentence).to_dict('list')
-    except AttributeError as e:
-        return str(e)
+    return _inner_group_nums(sentence).to_dict('list')
 
 
-def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
+def parse_num_group(num_group: list[str, ...]) -> tuple[str, float]:
     """
 
     Parameters
@@ -239,7 +227,7 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
             value = float(num_0.replace(',', '').replace(' ', ''))
             num_0_value = num_0
         except ValueError:
-            return f"needs manual inspection (parse_num_groups failed with num_0 float-like: {num_0})"
+            raise AttributeError(f"needs manual inspection (parse_num_groups failed with num_0 float-like: {num_0})")
     else:
         try:
             # simplify '50,000' or '50 000' to '50000' with replace()
@@ -250,35 +238,35 @@ def parse_num_group(num_group: list[str, ...]) -> Union[tuple[str, float], str]:
                 value = w2n.word_to_num(num_0)
                 num_0_value = str(value)
             except ValueError:
-                return f"needs manual inspection (parse_num_groups failed with num_0 int-like: {num_0})"
+                raise AttributeError(f"needs manual inspection (parse_num_groups failed with num_0 int-like: {num_0})")
 
     if len(num_group) == 1:
         return num_0_value, value
 
     # implicit else: only reached if len(num_group) > 1
     # we assume that subsequent numerals are meant in a multiplicative way, i.e. 500 million means 500 * 1000000
-    # (for exceptions see the else-clause of for-loop)
     for num in num_group[1:]:
         try:
             num_value = w2n.word_to_num(num)
         except ValueError as e:
-            return f"needs manual inspection (parse_num_groups failed with w2n: ({num}, {e}))"
+            raise AttributeError(f"needs manual inspection (parse_num_groups failed with w2n: ({num}, {e}))")
 
         if num_value <= 0:
-            return f"needs manual inspection (parse_num_group failed with negative number: {num_value})"
+            raise AttributeError(f"needs manual inspection (parse_num_group failed with negative number: {num_value})")
 
         elif np.log10(num_value) != int(np.log10(num_value)):
-            return f"needs manual inspection (parse_num_group failed, not power of ten: {num_value})"
+            raise AttributeError(f"needs manual inspection (parse_num_group failed, not power of ten: {num_value})")
 
         value *= num_value
 
     # convert to int in case num_0 was float and multiplication therefore made everything a float
     if value != int(value):
-        return f"needs manual inspection (parse_num_group float/int problem: {value})"
+        raise AttributeError(f"needs manual inspection (parse_num_group float/int problem: {value})")
+
     return str(int(value)), value
 
 
-def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, str]:
+def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> dict:
     """
 
     Parameters
@@ -290,11 +278,6 @@ def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, st
     applies parse_num_group to each NUM in cell, returns sentence df as dict
     """
 
-    # some cells already are "needs manual inspection". propagate that
-    if type(cell_with_grouped_nums) == str:
-        return "needs manual inspection (propagated)"
-
-    # implicit else by return
     sentence = pd.DataFrame(cell_with_grouped_nums)
 
     sentence.loc[sentence['upos'] == 'NUM', 'form'] = sentence[sentence['upos'] == 'NUM']['form'].map(parse_num_group)
@@ -302,7 +285,7 @@ def parse_num_groups(cell_with_grouped_nums: Union[dict, str]) -> Union[dict, st
     return sentence.to_dict('list')
 
 
-def num_list(cell: dict) -> Union[list[tuple[int, tuple[str, int]]], str]:
+def num_list(cell: dict) -> list[tuple[int, tuple[str, int]]]:
     """
 
     Parameters
@@ -314,41 +297,24 @@ def num_list(cell: dict) -> Union[list[tuple[int, tuple[str, int]]], str]:
     list of the forms of all 'NUM's in that sentence (which might already have been grouped + parsed before)
     """
 
-    # some cells already are "needs manual inspection". propagate that
-    if type(cell) == str:
-        return "needs manual inspection (propagated)"
-
     sentence = pd.DataFrame(cell)
     return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
 
 
-def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int, int], str]:
+def find_roundedness(num: tuple[int, tuple[str, int]]) -> tuple[bool, int, int]:
     """
 
     Parameters
     ----------
     num: tuple(index of number to be investigated, tuple(number as string, number as float))
-    (example: (7, (304000.00, 304000.0))
 
     Returns
     -------
     tuple containing:
-    str: 'float-like' or 'int-like': whether the given number contains a decimal point and is therefore float-like
-    for float-likes:
-        number of leading zeroes
-        number of proper digits
-    for int-likes:
-        number of proper digits
-        number of trailing zeroes
-    number of 'proper' digits, i.e. everything that is not a trailing zero
-    (in example: 3, because '304' are proper digits)
-
-    number of trailing zeroes
-    (in example: 4, because '000.0' are trailing zeroes)
+    bool: whether the number is a 'float-like' (i.e. whether the given number contains a decimal point)
+    int: #properdigits (number of 'proper' digits, i.e. everything that is not a leading/trailing zero)
+    int: ballpark (for float-likes: #leadingzeroes, for int-likes: #trailingzeroes)
     """
-    # some cells already are "needs manual inspection". propagate that
-    if type(num) == str and "manual inspection" in num:
-        return "needs manual inspection (propagated)"
 
     num_as_str = num[1][0]
 
@@ -358,11 +324,11 @@ def find_roundedness(num: Union[tuple[str, float], str]) -> Union[tuple[str, int
 
         proper_digits = len(num_as_str.lstrip('0'))
         leading_zeroes = len(num_as_str) - proper_digits
-        return 'float-like', leading_zeroes, proper_digits
+        return True,  proper_digits, leading_zeroes
 
     if num_as_str[0] == '0':
-        return f"needs manual inspection (find_roundedness found leading zero: {num})"
+        return np.nan
 
     proper_digits = len(num_as_str.rstrip('0'))
     trailing_zeroes = len(num_as_str) - proper_digits
-    return 'int-like', proper_digits, trailing_zeroes
+    return False, proper_digits, trailing_zeroes
