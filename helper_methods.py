@@ -78,7 +78,6 @@ def drop_na_with_count(df: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
     Parameters
     ----------
     df: DataFrame
-    drop_reason: will be printed
 
     Returns
     -------
