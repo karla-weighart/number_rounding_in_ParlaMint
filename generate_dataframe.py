@@ -135,13 +135,13 @@ def sentences_and_meta_df(file_path: str,
         sentences_df = sentences_df[sentences_df['Speaker_type'] != '-']
 
         # compress data: binary datatype if removing ghosts makes category binary
-        sentences_df['mp'] = (sentences_df['Speaker_type'] == 'MP')
-        sentences_df['female'] = (sentences_df['Speaker_gender'] == 'F')
+        sentences_df['is_mp'] = (sentences_df['Speaker_type'] == 'MP')
+        sentences_df['is_female'] = (sentences_df['Speaker_gender'] == 'F')
         sentences_df.drop(columns=['Speaker_type', 'Speaker_gender'], inplace=True)
 
     # compress data: binary datatype for binary categories
-    sentences_df['upper_house'] = (sentences_df['House'] == 'Upper house')
-    sentences_df['chairperson'] = (sentences_df['Speaker_role'] == 'Chairperson')
+    sentences_df['is_upper_house'] = (sentences_df['House'] == 'Upper house')
+    sentences_df['is_chairperson'] = (sentences_df['Speaker_role'] == 'Chairperson')
     sentences_df.drop(columns=['House', 'Speaker_role'], inplace=True)
 
     return sentences_df
@@ -174,7 +174,7 @@ def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = No
         min_sentence_length=min_sentence_length,
         remove_enum=remove_enum,
         only_with_nums=only_with_nums
-    ) for path in path_list), total=len(path_list)))
+    ) for path in path_list), total=len(path_list), desc="Generating Dataframe"))
 
     # reset index so we can use swifter
     multiple_file_df = multiple_file_df.reset_index(drop=True)
