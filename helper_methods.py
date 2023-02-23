@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from typing import Any
+from typing import Any, Tuple
 
 
 def is_enum(cell: dict) -> bool:
@@ -49,9 +49,43 @@ def contains_num(cell: dict) -> bool:
 
 
 def try_apply(function: callable, arg: Any, error_message: bool = False):
+    """
+
+    Parameters
+    ----------
+    function: callable
+    arg: arguments to pass to function
+    error_message:
+        True -> AttributeError will be returned as string
+        False -> AttributeError will be caught, np.nan will be returned
+
+    Returns
+    -------
+    tries to apply function to arg and return the result
+    if this fails, returns either an error message as a string or np.nan depending on parameter error_message
+    """
     try:
         return function(arg)
     except AttributeError as e:
         if error_message:
             return str(e)
         return np.nan
+
+
+def drop_na_with_count(df: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
+    """
+
+    Parameters
+    ----------
+    df: DataFrame
+    drop_reason: will be printed
+
+    Returns
+    -------
+    drops all rows containing nans from the dataframe
+    prints the number of rows that were dropped
+    returns the cleaned dataframe
+    """
+    new_df = df.dropna().copy()
+    n_rows_dropped = df.shape[0] - new_df.shape[0]
+    return new_df, n_rows_dropped
