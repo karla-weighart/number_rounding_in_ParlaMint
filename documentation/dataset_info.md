@@ -58,6 +58,9 @@ all sometimes contain '-', but only all of them together
 - Speaker_birth
 
 # .conllu (implied) columns
+see also:
+- https://universaldependencies.org/format.html
+- https://stanfordnlp.github.io/CoreNLP/
 ## useful
 (therefore contained in `SENTENCE_COLUMNS` in `environment_constants`)
 - form: concrete form of lemma
