@@ -1,6 +1,7 @@
 import conllu
 import pandas as pd
 import swifter
+import random
 
 from glob import glob
 from tqdm.notebook import tqdm
@@ -148,6 +149,7 @@ def sentences_and_meta_df(file_path: str,
 
 
 def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = None,
+                                                       random_seed: int=0,
                                                        remove_ghosts: bool = True,
                                                        min_sentence_length: int = 3,
                                                        remove_enum: bool = True,
@@ -155,6 +157,8 @@ def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = No
         -> pd.DataFrame:
     """
     number_of_files: how many .conllu files are used to generate the dataframe
+    random_seed: seed used to pick the number_of_files files randomly.
+        if random_seed==0, the first number_of_files files will be used
     remove_ghosts, min_sentence_length, remove_enum, only_with_nums: passed to sentences_and_meta_df
 
     Returns
@@ -163,10 +167,11 @@ def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = No
     one line per sentence
     columns as defined in environment constant META_COLUMNS
     """
-    if number_of_files is None:
-        path_list = make_conllu_files_list()
-    else:
-        path_list = make_conllu_files_list()[:number_of_files]
+    path_list = make_conllu_files_list()
+    if number_of_files is not None:
+        if random_seed != 0:
+            random.Random(random_seed).shuffle(path_list)
+        path_list = path_list[:number_of_files]
 
     multiple_file_df = pd.concat(tqdm((sentences_and_meta_df(
         path,
