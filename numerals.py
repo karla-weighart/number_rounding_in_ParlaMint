@@ -224,3 +224,25 @@ def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
     n_proper_digits = len(num_as_str.rstrip('0'))
     n_trailing_zeroes = len(num_as_str) - n_proper_digits
     return False, n_proper_digits, n_trailing_zeroes, "n/a"
+
+
+def find_uncertainty(row: pd.Series) -> tuple[float, float]:
+    """
+
+    Parameters
+    ----------
+    row: single number row from the df. find_roundedness() has to be applied before this!
+
+    Returns
+    -------
+    tuple containing:
+        float: absolute uncertainty of number
+        float: relative uncertainty of number
+
+    """
+    if row['is_float-like']:
+        absolute_uncertainty = 10**(-row['n_decimals'])
+    else:
+        absolute_uncertainty = 10**row['n_zeroes']
+    relative_uncertainty = absolute_uncertainty / row['num_value']
+    return absolute_uncertainty, relative_uncertainty
