@@ -188,7 +188,7 @@ def num_list(cell: dict) -> list[tuple[int, tuple[str, Union[float, int]]]]:
     return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
 
 
-def find_roundedness(num_as_str: str) -> tuple[bool, int, int]:
+def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
     """
 
     Parameters
@@ -199,21 +199,28 @@ def find_roundedness(num_as_str: str) -> tuple[bool, int, int]:
     -------
     tuple containing:
     bool: whether the number is a 'float-like' (i.e. whether the given number contains a decimal point)
-    int: #properdigits (number of 'proper' digits, i.e. everything that is not a leading/trailing zero)
-    int: #zeroes (for float-likes: #leadingzeroes, for int-likes: #trailingzeroes)
+    int: n_proper_digits (number of 'proper' digits, i.e. everything that is not a leading/trailing zero)
+    int: n_zeroes (for float-likes: n_leading_zeroes (before AND after decimal point), for int-likes: n_trailing_zeroes)
+    int: n_decimals (for floats only, ints: "n/a" instead)
     """
 
     if '.' in num_as_str:
+
+        n_pre_decimals = num_as_str.lstrip('0').index('.')
+        n_decimals = len(num_as_str.lstrip('0')) - n_pre_decimals - 1
+
         # remove decimal point
         num_as_str = num_as_str.replace('.', '')
 
-        proper_digits = len(num_as_str.lstrip('0'))
-        leading_zeroes = len(num_as_str) - proper_digits
-        return True,  proper_digits, leading_zeroes
+        n_proper_digits = len(num_as_str.lstrip('0'))
+        n_leading_zeroes = len(num_as_str) - n_proper_digits
 
-    if num_as_str[0] == '0':
-        return np.nan, np.nan, np.nan
+        return True,  n_proper_digits, n_leading_zeroes, n_decimals
 
-    proper_digits = len(num_as_str.rstrip('0'))
-    trailing_zeroes = len(num_as_str) - proper_digits
-    return False, proper_digits, trailing_zeroes
+    # get rid of numbers that start with 0 but are not float-like (will be dropped by drop_na later on)
+    elif num_as_str[0] == '0':
+        return np.nan, np.nan, np.nan, np.nan
+
+    n_proper_digits = len(num_as_str.rstrip('0'))
+    n_trailing_zeroes = len(num_as_str) - n_proper_digits
+    return False, n_proper_digits, n_trailing_zeroes, "n/a"
