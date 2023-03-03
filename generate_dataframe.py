@@ -118,6 +118,9 @@ def sentences_and_meta_df(file_path: str,
     # only load columns that contain valuable information
     meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
 
+    # replace nan values in Party_status column with "n/a"
+    meta_df['Party_status'].fillna("n/a", inplace=True)
+
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
 
@@ -147,7 +150,7 @@ def sentences_and_meta_df(file_path: str,
 
 
 def generate_sentences_and_meta_df_from_multiple_files(number_of_files: int = None,
-                                                       random_seed: int=0,
+                                                       random_seed: int = 0,
                                                        remove_ghosts: bool = True,
                                                        min_sentence_length: int = 3,
                                                        remove_enum: bool = True,
