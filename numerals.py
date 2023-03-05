@@ -244,5 +244,9 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
         absolute_uncertainty = 10**(-row['n_decimals'])
     else:
         absolute_uncertainty = 10**row['n_zeroes']
-    relative_uncertainty = absolute_uncertainty / row['num_value']
+
+    if row['num_value'] == 0:
+        relative_uncertainty = np.nan
+    else:
+        relative_uncertainty = absolute_uncertainty / row['num_value']
     return absolute_uncertainty, relative_uncertainty
