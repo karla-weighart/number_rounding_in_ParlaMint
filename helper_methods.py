@@ -48,14 +48,15 @@ def contains_num(cell: dict) -> bool:
     return contains_numeral  # or contains_digit
 
 
-def try_apply(function: callable, arg: Any, error_message: bool = False):
+def try_apply(function: callable, arg: Any, print_error_message: bool = False, return_error_message: bool = False):
     """
 
     Parameters
     ----------
     function: callable
     arg: arguments to pass to function
-    error_message:
+    print_error_message: whether the error message of the caught exception will be printed
+    return_error_message:
         True -> AttributeError will be returned as string
         False -> AttributeError will be caught, np.nan will be returned
 
@@ -67,9 +68,12 @@ def try_apply(function: callable, arg: Any, error_message: bool = False):
     try:
         return function(arg)
     except Exception as e:
-        if error_message:
+        if print_error_message:
+            print(e)
+        if return_error_message:
             return str(e)
-        return np.nan
+        else:
+            return np.nan
 
 
 def drop_na_with_count(df: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
