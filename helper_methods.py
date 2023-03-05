@@ -66,7 +66,7 @@ def try_apply(function: callable, arg: Any, error_message: bool = False):
     """
     try:
         return function(arg)
-    except AttributeError as e:
+    except Exception as e:
         if error_message:
             return str(e)
         return np.nan
