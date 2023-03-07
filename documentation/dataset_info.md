@@ -9,7 +9,7 @@
   - Speaker_gender *: 'F', 'M' -> 'is_female': True, False
 - ID -> utterance_id (without 'ParlaMint-GB')
 - Speaker_party *: all kinds of different parties
-- Party_status *: 'Coalition', 'Opposition', nan
+- Party_status *: 'Coalition', 'Opposition', nan -> 'is_coalition': True, False, 'n/a'
     - nan with the following names:
       - 'Armstrong, Hilary Jane',
       - 'Browne, Wallace',

@@ -118,8 +118,13 @@ def sentences_and_meta_df(file_path: str,
     # only load columns that contain valuable information
     meta_df = pd.read_csv(get_meta_file_path(file_path), sep='\t')[META_COLUMNS]
 
-    # replace nan values in Party_status column with "n/a"
-    meta_df['Party_status'].fillna("n/a", inplace=True)
+    # transform Party_status column:
+    # Party_status -> is_coalition
+    # Coalition -> True
+    # Opposition -> False
+    meta_df['is_coalition'] = meta_df['Party_status'].replace({'Coalition': True, 'Opposition': False}, inplace=False)
+    meta_df['is_coalition'].fillna('n/a', inplace=True)
+    meta_df.drop(columns=['Party_status'], inplace=True)
 
     # rename utterance_ID column to match sentences_df so the two dfs can be merged
     meta_df = meta_df.rename(columns={'ID': 'utterance_id'})
