@@ -250,3 +250,34 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
     else:
         relative_uncertainty = absolute_uncertainty / row['num_value']
     return absolute_uncertainty, relative_uncertainty
+
+
+def is_about_money(row: pd.Series, before_length: int=1, after_length: int=1) -> bool:
+    # TODO: possible extension: def what_is_counted( ... ) -> str:
+    #  which predefined category the counted noun comes from (if any of them)
+    """
+
+    Parameters
+    ----------
+    row: row corresponding to a single number from the large dataframe.
+        df.explode('NUMs') etc. has to be applied before this!
+    before_length: how many words before the number should be tested
+    after_length: how many words after the number should be tested
+
+    Returns
+    -------
+    bool: whether the number specifies an amount of money
+    """
+    sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
+    number_index = row['num_index']
+
+    money_words = {'£', 'pound', 'pounds', '€', 'euro', 'euros', 'penny', 'pence', 'p'}
+
+    start_index = max(0, number_index - before_length)
+    stop_index = min(number_index + after_length + 1, sentence_df.shape[0])
+
+    test_indices = range(start_index, stop_index)
+    for index in test_indices:
+        if sentence_df['form'][index] in money_words:
+            return True
+    return False
