@@ -26,7 +26,7 @@ def group_nums(cell: dict) -> dict:
     """
 
     sentence = pd.DataFrame(cell)
-    sentence.loc[sentence['upos'] == 'NUM', 'form'] =\
+    sentence.loc[sentence['upos'] == 'NUM', 'form'] = \
         sentence.loc[sentence['upos'] == 'NUM', 'form'].map(lambda x: [x])
 
     def _inner_group_nums(_sentence: pd.DataFrame) -> Union[pd.DataFrame, str]:
@@ -215,7 +215,7 @@ def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
         n_proper_digits = len(num_as_str.lstrip('0'))
         n_leading_zeroes = len(num_as_str) - n_proper_digits
 
-        return True,  n_proper_digits, n_leading_zeroes, n_decimals
+        return True, n_proper_digits, n_leading_zeroes, n_decimals
 
     # get rid of numbers that start with 0 but are not float-like (will be dropped by drop_na later on)
     elif num_as_str[0] == '0':
@@ -241,18 +241,19 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
 
     """
     if row['is_float-like']:
-        absolute_uncertainty = 10**(-row['n_decimals'])
+        absolute_uncertainty = 10 ** (-row['n_decimals'])
     else:
-        absolute_uncertainty = 10**row['n_zeroes']
+        absolute_uncertainty = 10 ** row['n_zeroes']
 
     if row['num_value'] == 0:
         relative_uncertainty = np.nan
     else:
-        relative_uncertainty = absolute_uncertainty / row['num_value']
+        relative_uncertainty = abs(absolute_uncertainty / row['num_value'])
+
     return absolute_uncertainty, relative_uncertainty
 
 
-def is_about_money(row: pd.Series, before_length: int=1, after_length: int=1) -> bool:
+def is_about_money(row: pd.Series, before_length: int = 1, after_length: int = 1) -> bool:
     # TODO: possible extension: def what_is_counted( ... ) -> str:
     #  which predefined category the counted noun comes from (if any of them)
     """
