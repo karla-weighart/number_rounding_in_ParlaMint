@@ -31,3 +31,46 @@ LIT_EVAL_RESULT_COLUMNS = ['sentence',
                            'num_descendants',
                            'num_descendant_set'
                            ]
+
+# approximators that will be searched for by has_approximators
+APPROXIMATORS = {('before', 'neighborhood'): (('around',),
+                                              ('about',),
+                                              ('appr',), ('appr.',), ('approx',), ('approx.',), ('approximately',),
+                                              ('ca',), ('ca.',), ('circa',),
+                                              ('on', 'the', 'order', 'of'),
+                                              ('roughly',),
+                                              ('round',),
+                                              ('roundabout',),
+                                              ('something', 'like')
+                                              ),
+                 ('after', 'plain'): (('or', 'so'),
+                 ),
+                 ('before', 'upper_limit'): (('almost',),
+                                             ('at', 'most'),
+                                             ('below',),
+                                             ('close', 'to'),
+                                             ('nearly',),
+                                             ('less', 'than'),
+                                             ('lower', 'than'),
+                                             ('under',),
+                                             ('up', 'to'),
+                                             ),
+                 ('after', 'upper_limit'): (('and', 'below'),
+                                            ('and', 'less'),
+                                            ('or', 'below'),
+                                            ('or', 'less')
+                                            ),
+                 ('before', 'lower_limit'): (('above',),
+                                             ('at', 'least'),
+                                             ('higher', 'than'),
+                                             ('more', 'than'),
+                                             ('over',)
+                                             ),
+                 ('after', 'lower_limit'): (('and', 'above'),
+                                            ('and', 'higher'),
+                                            ('and', 'more'),
+                                            ('or', 'above'),
+                                            ('or', 'higher'),
+                                            ('or', 'more')
+                                            )
+                 }

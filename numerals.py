@@ -1,4 +1,5 @@
 from typing import Union
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -253,7 +254,10 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
     return absolute_uncertainty, relative_uncertainty
 
 
-def is_about_money(row: pd.Series, before_length: int = 1, after_length: int = 1) -> bool:
+def is_about_money(row: pd.Series,
+                   before_length: int = 1,
+                   after_length: int = 1)\
+        -> bool:
     # TODO: possible extension: def what_is_counted( ... ) -> str:
     #  which predefined category the counted noun comes from (if any of them)
     """
@@ -275,10 +279,65 @@ def is_about_money(row: pd.Series, before_length: int = 1, after_length: int = 1
     money_words = {'£', 'pound', 'pounds', '€', 'euro', 'euros', 'penny', 'pence', 'p'}
 
     start_index = max(0, number_index - before_length)
-    stop_index = min(number_index + after_length + 1, sentence_df.shape[0])
+    stop_index = min( sentence_df.shape[0], number_index + after_length + 1)
 
     test_indices = range(start_index, stop_index)
     for index in test_indices:
         if sentence_df['form'][index] in money_words:
             return True
     return False
+
+
+def has_approximator(row: pd.Series,
+                     approximators: dict[tuple[str, str]: tuple[tuple[str]]],
+                     before_gap: int = 1,
+                     after_gap: int = 1) \
+        -> tuple[bool, dict[str: set[tuple[str]]]]:
+    """
+
+    Parameters
+    ----------
+    row: row from main DataFrame corresponding to a single number.
+        df.explode('NUMs') etc. has to be applied before this!
+    approximators: dict of approximators to be tested for. usually just use APPROXIMATORS from environment_constants
+    before_gap: how many words are allowed between the last part of a pre-modifying approximator and the modified number
+    after_gap: how many words are allowed between the last part of a post-modifying approximator and the modified number
+
+    Returns
+    -------
+    tuple containing
+        bool: whether the number is modified by any vague approximators
+        dict containing:
+            keys: categories of vague approximators that modify the number:
+                'neighborhood' / 'upper_limit' / 'lower_limit'
+            values: set of the vague approximators themselves, each as tuple of strings, e.g.:
+                {('or', 'more'), ('up', 'to')}
+    """
+
+    sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
+    number_index = row['num_index']
+
+    found_approximators = defaultdict(set)
+
+    for (approximator_position, approximator_type), approximator_tuple in approximators.items():
+        for approximator in approximator_tuple:
+            approximator_n_words = len(approximator)
+
+            # start_index and stop_index: the minimum and maximum index the first word of the approximator could have
+            if approximator_position == 'before':
+                first_word_min_index = max(0,
+                                           number_index - approximator_n_words - before_gap)
+                first_word_max_index = number_index - approximator_n_words
+            else:
+                first_word_min_index = number_index + 1
+                first_word_max_index = min(sentence_df.shape[0] - approximator_n_words + 1,
+                                           number_index + after_gap + 2)
+
+            # check with sliding window if the approximator matches the region before/after the string
+            # if so, add the current approximator to the relevant entry in the result dict found_approximators
+            for first_word_index in range(first_word_min_index, first_word_max_index):
+                if all([sentence_df['form'][first_word_index + i] == approximator[i] for i in
+                        range(approximator_n_words)]):
+                    found_approximators[approximator_type].add(approximator)
+
+    return bool(found_approximators), dict(found_approximators)
