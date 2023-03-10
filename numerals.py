@@ -7,6 +7,8 @@ from word2number import w2n
 
 from concordance import concordance_ancestors
 
+from environment_constants import MONEY_WORDS
+
 
 def group_nums(cell: dict) -> dict:
     """
@@ -276,7 +278,7 @@ def is_about_money(row: pd.Series,
     sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
     number_index = row['num_index']
 
-    money_words = {'£', 'pound', 'pounds', '€', 'euro', 'euros', 'penny', 'pence', 'p'}
+    money_words = MONEY_WORDS
 
     start_index = max(0, number_index - before_length)
     stop_index = min( sentence_df.shape[0], number_index + after_length + 1)
