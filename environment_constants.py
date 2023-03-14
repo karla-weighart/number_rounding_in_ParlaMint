@@ -31,11 +31,11 @@ LIT_EVAL_RESULT_COLUMNS = ['sentence',
                            'num_descendants',
                            'num_descendant_set'
                            ]
+
 # forms that will be searched for by is_about_money
 MONEY_WORDS = {'£', 'pound', 'pounds', 'penny', 'pence', 'p',
                '€', 'euro', 'euros', 'cent', 'cents',
                '$', 'dollar', 'dollars', 'USD', 'US-dollar', 'US-dollars'}
-
 
 # approximators that will be searched for by has_approximators
 APPROXIMATORS = {('before', 'neighborhood'): (('around',),
@@ -49,7 +49,7 @@ APPROXIMATORS = {('before', 'neighborhood'): (('around',),
                                               ('something', 'like')
                                               ),
                  ('after', 'plain'): (('or', 'so'),
-                 ),
+                                      ),
                  ('before', 'upper_limit'): (('almost',),
                                              ('at', 'most'),
                                              ('below',),
