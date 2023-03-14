@@ -7,7 +7,7 @@ from word2number import w2n
 
 from concordance import concordance_ancestors
 
-from environment_constants import MONEY_WORDS
+from environment_constants import MONEY_WORDS, APPROXIMATORS
 
 
 def group_nums(cell: dict) -> dict:
@@ -100,7 +100,7 @@ def parse_num_group(num_group: list[str, ...]) -> tuple[str, Union[int, float]]:
     Returns
     -------
     numerical value of what this string would be read as by a human as str
-    float representation (which would not suffice on its own because float(4.000) = float(4)) #TODO
+    float representation (which would not suffice on its own because float(4.000) = float(4))
     """
 
     num_0 = num_group[0]
@@ -257,17 +257,17 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
 
 
 def is_about_money(row: pd.Series,
+                   money_words: set[str] = MONEY_WORDS,
                    before_length: int = 1,
                    after_length: int = 1)\
         -> bool:
-    # TODO: possible extension: def what_is_counted( ... ) -> str:
-    #  which predefined category the counted noun comes from (if any of them)
     """
 
     Parameters
     ----------
     row: row corresponding to a single number from the large dataframe.
         df.explode('NUMs') etc. has to be applied before this!
+    money_words: set of words to look for, defaults to MONEY_WORDS from environment_constants
     before_length: how many words before the number should be tested
     after_length: how many words after the number should be tested
 
@@ -278,20 +278,20 @@ def is_about_money(row: pd.Series,
     sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
     number_index = row['num_index']
 
-    money_words = MONEY_WORDS
-
     start_index = max(0, number_index - before_length)
-    stop_index = min( sentence_df.shape[0], number_index + after_length + 1)
+    stop_index = min(sentence_df.shape[0], number_index + after_length + 1)
 
     test_indices = range(start_index, stop_index)
     for index in test_indices:
+        if index == number_index:
+            continue
         if sentence_df['form'][index] in money_words:
             return True
     return False
 
 
 def has_approximator(row: pd.Series,
-                     approximators: dict[tuple[str, str]: tuple[tuple[str]]],
+                     approximators: dict[tuple[str, str]: tuple[tuple[str]]] = APPROXIMATORS,
                      before_gap: int = 1,
                      after_gap: int = 1) \
         -> tuple[bool, dict[str: set[tuple[str]]]]:
@@ -301,7 +301,7 @@ def has_approximator(row: pd.Series,
     ----------
     row: row from main DataFrame corresponding to a single number.
         df.explode('NUMs') etc. has to be applied before this!
-    approximators: dict of approximators to be tested for. usually just use APPROXIMATORS from environment_constants
+    approximators: dict of approximators to be tested for, defaults to APPROXIMATORS from environment_constants
     before_gap: how many words are allowed between the last part of a pre-modifying approximator and the modified number
     after_gap: how many words are allowed between the last part of a post-modifying approximator and the modified number
 
