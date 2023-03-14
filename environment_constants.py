@@ -58,7 +58,7 @@ APPROXIMATORS = {('before', 'neighborhood'): (('around',),
                                              ('less', 'than'),
                                              ('lower', 'than'),
                                              ('under',),
-                                             ('up', 'to'),
+                                             ('up', 'to')
                                              ),
                  ('after', 'upper_limit'): (('and', 'below'),
                                             ('and', 'less'),
