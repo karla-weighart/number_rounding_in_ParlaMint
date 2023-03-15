@@ -44,10 +44,10 @@ def tsv2upos_tabularx(table_content: str,
     return latex
 
 
-def subtable(table_content: str,
-             caption: str,
-             label: str,
-             colors: dict[int: str] = None) \
+def tsv2subtable(table_content: str,
+                 caption: str,
+                 label: str,
+                 colors: dict[int: str] = None) \
         -> str:
     """
 
@@ -67,7 +67,7 @@ def subtable(table_content: str,
 
     return f"\\begin{{subtable}}[h]{{0.48\\textwidth}}\n\t\\centering\n\t" \
            f"{tabularx}\n\t\\" \
-           f"caption{caption}\n\t\\label{{}}\n\t\\label{{tab:{label}}}\n\t\\end{{subtable}}"
+           f"caption{{{caption}}}\n\t\\label{{}}\n\t\\label{{tab:{label}}}\n\t\\end{{subtable}}"
 
 
 def comparison_table(text_incorrect: str,
@@ -90,20 +90,29 @@ def comparison_table(text_incorrect: str,
     -------
 
     """
-    tabular_incorrect = tsv2upos_tabularx(text_incorrect,
-                                          colors={index: '\\clrincorrect' for index in corrected_indices})
-    tabular_incorrect_caption = 'Original Version from the Dataset',
+    subtable_incorrect = tsv2subtable(text_incorrect,
+                                      caption='Original Version',
+                                      label=f"tab:{label}-incorrect",
+                                      colors={index: '\\clrincorrect' for index in corrected_indices}
+                                      ).replace('\n', '\n\t')
 
-    tabular_correct = tsv2upos_tabularx(text_correct, colors={index: '\\clrcorrect' for index in corrected_indices})
-    tabular_correct_caption = 'Manually Corrected Version'
+    subtable_correct = tsv2subtable(text_correct,
+                                    caption='Corrected Version',
+                                    label=f"tab:{label}-correct",
+                                    colors={index: '\\clrcorrect' for index in corrected_indices}
+                                    ).replace('\n', '\n\t')
 
-    latex = f"\\begin{{table}}[]\n\t{subtable(tabular_incorrect)}\n%\n\t\\hfill\n%\t"
+    latex = f"\\begin{{table}}[]\n\t" \
+            f"{subtable_incorrect}" \
+            f"\n%\n\t\\hfill\n%\t\n" \
+            f"{subtable_correct}" \
+            f"\n\t\\caption{{{caption}}}\n\t\\label{{tab:{label}}}\n\\end{{table}}"
 
     return latex
 
 
 if __name__ == '__main__':
-    print(subtable("""1	What	what	DET	WDT	PronType=Int	2	det	_	NER=O
+    text_incorrect = """1	What	what	DET	WDT	PronType=Int	2	det	_	NER=O
 2	assessment	assessment	NOUN	NN	Number=Sing	5	obj	_	NER=O
 3	he	he	PRON	PRP	Case=Nom|Gender=Masc|Number=Sing|Person=3|PronType=Prs	5	nsubj	_	NER=O
 4	has	have	VERB	VBZ	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	aux	_	NER=O
@@ -121,4 +130,36 @@ if __name__ == '__main__':
 16	and	and	CCONJ	CC	_	17	cc	_	NER=O
 17	fairly	fairly	ADV	RB	_	14	conj	_	NER=O|SpaceAfter=No
 18	.	.	PUNCT	.	_	5	punct	_	NER=O
-""", 'Original Version from the Dataset'))
+"""
+
+    text_correct = """1	What	what	DET	WDT	PronType=Int	3	det	_	NER=O
+2	assessment	assessment	NOUN	NN	Number=Sing	5	obj	_	NER=O
+3	he	he	PRON	PRP	Case=Nom|Gender=Masc|Number=Sing|Person=3|PronType=Prs	5	nsubj	_	NER=O
+4	has	have	VERB	VBZ	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	aux	_	NER=O
+5	made	make	VERB	VBN	Tense=Past|VerbForm=Part	0	root	_	NER=O
+6	of	of	ADP	IN	_	14	mark	_	NER=O
+7	whether	whether	ADP	IN	_	14	mark	_	NER=O
+8	Zimbabwe	Zimbabwe	PROPN	NNP	Number=Sing	11	nmod:poss	_	NER=O|SpaceAfter=No
+9	’s	’s	PART	POS	_	8	case	_	NER=O
+10	next	next	ADJ	JJ	Degree=Pos	11	amod	_	NER=O
+11	election	election	NOUN	NN	Number=Sing	14	nsubj:pass	_	NER=O
+12	will	will	VERB	MD	VerbForm=Fin	14	aux	_	NER=O
+13	be	be	VERB	VB	VerbForm=Inf	14	aux:pass	_	NER=O
+14	conducted	conduct	VERB	VBN	Tense=Past|VerbForm=Part|Voice=Pass	5	advcl	_	NER=O
+15	freely	freely	ADV	RB	_	14	advmod	_	NER=O
+16	and	and	CCONJ	CC	_	17	cc	_	NER=O
+17	fairly	fairly	ADV	RB	_	14	conj	_	NER=O|SpaceAfter=No
+18	.	.	PUNCT	.	_	5	punct	_	NER=O
+"""
+
+    corrected_indices = [1]
+
+    caption = 'testitestmann \\texttt{blablabla}'
+
+    label = 'testlabel'
+
+    print(comparison_table(text_incorrect=text_incorrect,
+                           text_correct=text_correct,
+                           corrected_indices=corrected_indices,
+                           caption=caption,
+                           label=label))
