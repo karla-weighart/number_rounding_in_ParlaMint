@@ -14,13 +14,11 @@ def tsv2upos_tabularx(table_content: str,
     """
     lines = table_content.rstrip().split('\n')
 
-    table_data = []
-
     for line_index in range(len(lines)):
         items = lines[line_index].split()
 
-        # get rid of unnecessary columns
-        for i in (2, 3, 3, 4, 4, 4):
+        # get rid of unnecessary columns. work from right to left to avoid index shifts after every pop
+        for i in (9, 8, 7, 5, 4, 2):
             items.pop(i)
 
         # add macro for UPOS column
@@ -31,15 +29,14 @@ def tsv2upos_tabularx(table_content: str,
             items[-1] = colors[line_index + 1] + items[-1]
 
         # merge the items into one line and adjust whitespace
-        line = '&\t'.join(item.ljust(16) for item in items)
-        table_data.append(line)
+        lines[line_index] = '&\t'.join(item.ljust(16) for item in items)
 
     # merge the lines into a single string
-    table = '\\\\\n\t'.join(table_data) + '\\\\'
+    table_data = '\\\\\n\t'.join(lines) + '\\\\'
 
     latex = f"\\begin{{tabularx}}{{\\textwidth}}{{cllc}}\n\t\\toprule\n\t\\texttt{{INDEX}}\t&\t\\texttt{{" \
-            f"FORM}}\t&\t\\texttt{{UPOS}}\t&\t\\texttt{{HEAD}}\\\\\n\t\\mid" \
-            f"rule\n\t{table}\n\t\\bottomrule\n\\end{{tabularx}}"
+            f"FORM}}\t&\t\\texttt{{UPOS}}\t&\t\\texttt{{HEAD}}\t\\\\\n\t\\mid" \
+            f"rule\n\t{table_data}\n\t\\bottomrule\n\\end{{tabularx}}"
 
     return latex
 
@@ -62,7 +59,7 @@ def tsv2subtable(table_content: str,
     -------
     latex subtable as str
     """
-    # adjust indentation
+    # generate tabularx and adjust indentation
     tabularx = tsv2upos_tabularx(table_content, colors=colors).replace('\n', '\n\t')
 
     return f"\\begin{{subtable}}[h]{{0.48\\textwidth}}\n\t\\centering\n\t" \
@@ -74,7 +71,7 @@ def comparison_table(text_incorrect: str,
                      text_correct: str,
                      corrected_indices: list[int],
                      caption: str,
-                     label: str = None) \
+                     label: str) \
         -> str:
     """
 
@@ -87,9 +84,11 @@ def comparison_table(text_incorrect: str,
     label: label for the whole table
 
     Returns
+    latex table with two subtables comparing the version before with the version after the corrections
     -------
 
     """
+    # generate subtables and adjust indentation
     subtable_incorrect = tsv2subtable(text_incorrect,
                                       caption='Original Version',
                                       label=f"tab:{label}-incorrect",
@@ -102,6 +101,7 @@ def comparison_table(text_incorrect: str,
                                     colors={index: '\\clrcorrect' for index in corrected_indices}
                                     ).replace('\n', '\n\t')
 
+    # put everything together
     latex = f"\\begin{{table}}[]\n\t" \
             f"{subtable_incorrect}" \
             f"\n%\n\t\\hfill\n%\t\n" \
