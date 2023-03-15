@@ -3,7 +3,7 @@ import pandas as pd
 import random
 
 from glob import glob
-from tqdm.notebook import tqdm
+from tqdm import tqdm   # from tqdm.notebook import tqdm # notebook version sometimes fails. use plain tqdm instead :(
 
 from helper_methods import is_enum, count_words, contains_num
 from environment_constants import PATH, META_COLUMNS, SENTENCE_COLUMNS
