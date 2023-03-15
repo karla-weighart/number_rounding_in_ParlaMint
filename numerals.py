@@ -367,7 +367,9 @@ def is_time_of_day(row: pd.Series,
     sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
     number_index = row['num_index']
 
-    test_indices = range(number_index + 1, number_index + 1 + after_length)
+    max_index = min(sentence_df.shape[0], number_index + 1 + after_length)
+
+    test_indices = range(number_index + 1, max_index)
     for index in test_indices:
         if sentence_df['form'][index] in time_of_day_words:
             return True
