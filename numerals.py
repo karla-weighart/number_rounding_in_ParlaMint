@@ -332,12 +332,12 @@ def has_approximator(row: pd.Series,
                 first_word_max_index = number_index - approximator_n_words
             else:
                 first_word_min_index = number_index + 1
-                first_word_max_index = min(sentence_df.shape[0] - approximator_n_words + 1,
-                                           number_index + after_gap + 2)
+                first_word_max_index = min(sentence_df.shape[0] - approximator_n_words,
+                                           number_index + 1 + after_gap)
 
             # check with sliding window if the approximator matches the region before/after the string
             # if so, add the current approximator to the relevant entry in the result dict found_approximators
-            for first_word_index in range(first_word_min_index, first_word_max_index+1):
+            for first_word_index in range(first_word_min_index, first_word_max_index + 1):
                 if all([sentence_df['form'][first_word_index + i] == approximator[i] for i in
                         range(approximator_n_words)]):
                     found_approximators[approximator_type].add(approximator)
