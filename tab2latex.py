@@ -46,14 +46,28 @@ def tsv2upos_tabularx(table_content: str,
 
 def subtable(table_content: str,
              caption: str,
+             label: str,
              colors: dict[int: str] = None) \
         -> str:
+    """
+
+    Parameters
+    ----------
+    table_content: tsv of a single sentence from .conllu file
+    caption: caption for the latex subtable
+    label: label for the latex subtable
+    colors: indices of lines to color, colorvalues as strings (e.g. '\\clrincorrect')
+
+    Returns
+    -------
+    latex subtable as str
+    """
     # adjust indentation
     tabularx = tsv2upos_tabularx(table_content, colors=colors).replace('\n', '\n\t')
 
     return f"\\begin{{subtable}}[h]{{0.48\\textwidth}}\n\t\\centering\n\t" \
            f"{tabularx}\n\t\\" \
-           f"caption{caption}\n\t\\label{{}}\n\t\\end{{subtable}}"
+           f"caption{caption}\n\t\\label{{}}\n\t\\label{{tab:{label}}}\n\t\\end{{subtable}}"
 
 
 def comparison_table(text_incorrect: str,
@@ -62,6 +76,20 @@ def comparison_table(text_incorrect: str,
                      caption: str,
                      label: str = None) \
         -> str:
+    """
+
+    Parameters
+    ----------
+    text_incorrect: tsv of a single sentence from .conllu file - incorrect version
+    text_correct: tsv of a single sentence from .conllu file - correct version
+    corrected_indices: indices of corrected dependencies
+    caption: caption for the whole table (captions for subtables will be generated automatically!)
+    label: label for the whole table
+
+    Returns
+    -------
+
+    """
     tabular_incorrect = tsv2upos_tabularx(text_incorrect,
                                           colors={index: '\\clrincorrect' for index in corrected_indices})
     tabular_incorrect_caption = 'Original Version from the Dataset',
