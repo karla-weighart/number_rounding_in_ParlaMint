@@ -7,7 +7,7 @@ from word2number import w2n
 
 from concordance import concordance_ancestors
 
-from environment_constants import MONEY_WORDS, APPROXIMATORS
+from environment_constants import MONEY_WORDS, APPROXIMATORS, TIME_OF_DAY_WORDS
 
 
 def group_nums(cell: dict) -> dict:
@@ -255,6 +255,8 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
 
     return absolute_uncertainty, relative_uncertainty
 
+# TODO: refactor is_about_money, has_approximator, is_time_of_day into two versions of the same thing?
+
 
 def is_about_money(row: pd.Series,
                    money_words: set[str] = MONEY_WORDS,
@@ -343,3 +345,30 @@ def has_approximator(row: pd.Series,
                     found_approximators[approximator_type].add(approximator)
 
     return bool(found_approximators), dict(found_approximators)
+
+
+def is_time_of_day(row: pd.Series,
+                   time_of_day_words: set[str] = TIME_OF_DAY_WORDS,
+                   after_length: int = 1)\
+        -> bool:
+    """
+
+    Parameters
+    ----------
+    row: row corresponding to a single number from the large dataframe.
+        df.explode('NUMs') etc. has to be applied before this!
+    time_of_day_words: set of words to look for, defaults to TIME_OF_DAY_WORDS from environment_constants
+    after_length: how many words after the number should be tested
+
+    Returns
+    -------
+    bool: whether the number specifies an amount of money
+    """
+    sentence_df = pd.DataFrame(row['sentence_parsed_num_groups'])
+    number_index = row['num_index']
+
+    test_indices = range(number_index + 1, number_index + 1 + after_length)
+    for index in test_indices:
+        if sentence_df['form'][index] in time_of_day_words:
+            return True
+    return False

@@ -79,3 +79,6 @@ APPROXIMATORS = {('before', 'neighborhood'): (('around',),
                                             ('or', 'more')
                                             )
                  }
+
+# words signifying that a number specifies a time of day. will be searched for by is_time_of_day
+TIME_OF_DAY_WORDS = {'am', 'a.m.', 'pm', 'p.m.'}
