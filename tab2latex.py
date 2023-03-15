@@ -84,8 +84,8 @@ def comparison_table(text_incorrect: str,
     label: label for the whole table
 
     Returns
-    latex table with two subtables comparing the version before with the version after the corrections
     -------
+    latex table with two subtables comparing the version before with the version after the corrections
 
     """
     # generate subtables and adjust indentation
@@ -112,7 +112,7 @@ def comparison_table(text_incorrect: str,
 
 
 if __name__ == '__main__':
-    text_incorrect = """1	What	what	DET	WDT	PronType=Int	2	det	_	NER=O
+    text_incorrect_ = """1	What	what	DET	WDT	PronType=Int	2	det	_	NER=O
 2	assessment	assessment	NOUN	NN	Number=Sing	5	obj	_	NER=O
 3	he	he	PRON	PRP	Case=Nom|Gender=Masc|Number=Sing|Person=3|PronType=Prs	5	nsubj	_	NER=O
 4	has	have	VERB	VBZ	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	aux	_	NER=O
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 18	.	.	PUNCT	.	_	5	punct	_	NER=O
 """
 
-    text_correct = """1	What	what	DET	WDT	PronType=Int	3	det	_	NER=O
+    text_correct_ = """1	What	what	DET	WDT	PronType=Int	3	det	_	NER=O
 2	assessment	assessment	NOUN	NN	Number=Sing	5	obj	_	NER=O
 3	he	he	PRON	PRP	Case=Nom|Gender=Masc|Number=Sing|Person=3|PronType=Prs	5	nsubj	_	NER=O
 4	has	have	VERB	VBZ	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	aux	_	NER=O
@@ -152,14 +152,14 @@ if __name__ == '__main__':
 18	.	.	PUNCT	.	_	5	punct	_	NER=O
 """
 
-    corrected_indices = [1]
+    corrected_indices_ = [1]
 
-    caption = 'testitestmann \\texttt{blablabla}'
+    caption_ = 'testitestmann \\texttt{blablabla}'
 
-    label = 'testlabel'
+    label_ = 'testlabel'
 
-    print(comparison_table(text_incorrect=text_incorrect,
-                           text_correct=text_correct,
-                           corrected_indices=corrected_indices,
-                           caption=caption,
-                           label=label))
+    print(comparison_table(text_incorrect=text_incorrect_,
+                           text_correct=text_correct_,
+                           corrected_indices=corrected_indices_,
+                           caption=caption_,
+                           label=label_))
