@@ -255,7 +255,7 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
 
     return absolute_uncertainty, relative_uncertainty
 
-# TODO: refactor is_about_money, has_approximator, is_time_of_day into two versions of the same thing?
+# TODO: refactor is_about_money, has_approximator, is_time_of_day into three versions of the same thing?
 
 
 def is_about_money(row: pd.Series,
