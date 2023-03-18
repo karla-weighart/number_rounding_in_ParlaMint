@@ -1,6 +1,8 @@
 import conllu
 import pandas as pd
 import random
+# noinspection PyUnresolvedReferences
+import swifter
 
 from glob import glob
 from tqdm import tqdm   # from tqdm.notebook import tqdm # notebook version sometimes fails. use plain tqdm instead :(
