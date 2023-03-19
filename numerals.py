@@ -209,6 +209,7 @@ def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
 
     if '.' in num_as_str:
 
+        # 00.5, 0.5, .5 all have the same precision
         n_pre_decimals = num_as_str.lstrip('0').index('.')
         n_decimals = len(num_as_str.lstrip('0')) - n_pre_decimals - 1
 
