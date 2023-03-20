@@ -191,7 +191,7 @@ def num_list(cell: dict) -> list[tuple[int, tuple[str, Union[float, int]]]]:
     return list(zip(sentence[sentence['upos'] == 'NUM'].index, sentence[sentence['upos'] == 'NUM']['form']))
 
 
-def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
+def count_digits_and_zeros(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
     """
 
     Parameters
@@ -203,7 +203,7 @@ def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
     tuple containing:
     bool: whether the number is a 'float-like' (i.e. whether the given number contains a decimal point)
     int: n_proper_digits (number of 'proper' digits, i.e. everything that is not a leading/trailing zero)
-    int: n_zeroes (for float-likes: n_leading_zeroes (before AND after decimal point), for int-likes: n_trailing_zeroes)
+    int: n_zeros (for float-likes: n_leading_zeros (before AND after decimal point), for int-likes: n_trailing_zeros)
     int: n_decimals (for floats only, ints: "n/a" instead)
     """
 
@@ -217,17 +217,17 @@ def find_roundedness(num_as_str: str) -> tuple[bool, int, int, Union[int, str]]:
         num_as_str = num_as_str.replace('.', '')
 
         n_proper_digits = len(num_as_str.lstrip('0'))
-        n_leading_zeroes = len(num_as_str) - n_proper_digits
+        n_leading_zeros = len(num_as_str) - n_proper_digits
 
-        return True, n_proper_digits, n_leading_zeroes, n_decimals
+        return True, n_proper_digits, n_leading_zeros, n_decimals
 
     # get rid of numbers that start with 0 but are not float-like (will be dropped by drop_na later on)
     elif num_as_str[0] == '0':
         return np.nan, np.nan, np.nan, np.nan
 
     n_proper_digits = len(num_as_str.rstrip('0'))
-    n_trailing_zeroes = len(num_as_str) - n_proper_digits
-    return False, n_proper_digits, n_trailing_zeroes, "n/a"
+    n_trailing_zeros = len(num_as_str) - n_proper_digits
+    return False, n_proper_digits, n_trailing_zeros, "n/a"
 
 
 def find_uncertainty(row: pd.Series) -> tuple[float, float]:
@@ -235,7 +235,7 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
 
     Parameters
     ----------
-    row: single number row from the df. find_roundedness() has to be applied before this!
+    row: single number row from the df. count_digits_and_zeros() has to be applied before this!
 
     Returns
     -------
@@ -247,7 +247,7 @@ def find_uncertainty(row: pd.Series) -> tuple[float, float]:
     if row['is_float-like']:
         absolute_uncertainty = 10 ** (-row['n_decimals'])
     else:
-        absolute_uncertainty = 10 ** row['n_zeroes']
+        absolute_uncertainty = 10 ** row['n_zeros']
 
     if row['num_value'] == 0:
         relative_uncertainty = np.nan
